@@ -67,3 +67,10 @@ test('does not replace the workspace with a loading screen during navigation',as
   await expect(loading).toHaveCount(0);
  }
 });
+
+test('keeps profile page titles in English in the Russian interface',async({page})=>{
+ await authenticatedPage(page,'/profile');
+ await page.getByRole('button',{name:/switch interface language/i}).click();
+ await expect(page.locator('.profile-page .pretitle')).toHaveText('Account & access');
+ await expect(page.getByRole('heading',{name:'profile settings'})).toBeVisible();
+});

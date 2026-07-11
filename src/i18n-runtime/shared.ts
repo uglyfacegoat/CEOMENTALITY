@@ -16,6 +16,7 @@ function translateValue(value:unknown):unknown {
 export function translateProps<T>(props:T):T {
  if(!props||typeof props!=='object')return props;
  const source=props as Record<string,unknown>;
+ if(source['data-i18n-static']===true)return props;
  let translated:Record<string,unknown>|undefined;
  for(const key of translatedProps)if(key in source){
   const value=translateValue(source[key]);

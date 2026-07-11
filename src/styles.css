@@ -323,10 +323,13 @@ h1 {
 .pretitle { margin: 0 0 18px; color: var(--blue); }
 .pretitle-amp {
   display: inline-block;
-  margin: 0 .08em;
-  font-weight: 400;
+  margin: 0 .1em;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: .96em;
+  font-style: italic;
+  font-weight: 700;
   letter-spacing: 0;
-  transform: translateY(-.02em);
+  transform: translateY(-.04em);
 }
 .hero-row, .page-title-row, .analytics-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; margin-bottom: 26px; }
 .analytics-head { align-items: center; margin-bottom: 28px; }
