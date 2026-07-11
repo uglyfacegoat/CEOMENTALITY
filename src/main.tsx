@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
 import { api } from './services/api';
@@ -7,18 +7,18 @@ import { Icon } from './components/ui/Icon';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { CandidateForm } from './features/candidates/CandidateForm';
+import { Dossiers } from './features/candidates/DossiersPage';
+import { Dossier } from './features/candidates/DossierPage';
 import { DropForm } from './features/access/DropForm';
+import { Access } from './features/access/AccessPage';
+import { Analytics } from './features/analytics/AnalyticsPage';
+import { ProfilePage } from './features/profile/ProfilePage';
+import { LoginPage } from './features/auth/LoginPage';
 import { ErrorBoundary } from './app/ErrorBoundary';
 import { parseRoute, writeRoute } from './app/routes';
 import type { AccessBatch, AppRoute, BatchDraft, Candidate, CandidateDraft, DropDraft, Language, SavedView, WorkspaceFilters, WorkspaceState } from './types/domain';
 import './styles.css';
 
-const Dossiers=lazy(()=>import('./features/candidates/DossiersPage').then(module=>({default:module.Dossiers})));
-const Dossier=lazy(()=>import('./features/candidates/DossierPage').then(module=>({default:module.Dossier})));
-const Access=lazy(()=>import('./features/access/AccessPage').then(module=>({default:module.Access})));
-const Analytics=lazy(()=>import('./features/analytics/AnalyticsPage').then(module=>({default:module.Analytics})));
-const ProfilePage=lazy(()=>import('./features/profile/ProfilePage').then(module=>({default:module.ProfilePage})));
-const LoginPage=lazy(()=>import('./features/auth/LoginPage').then(module=>({default:module.LoginPage})));
 const defaultFilters:WorkspaceFilters={status:'All',wave:'All',source:'All',expertise:'All'};
 const getSavedView=():SavedView|null=>{try{return JSON.parse(localStorage.getItem('ceomentality:view')||'null') as SavedView|null}catch{return null}};
 const runPageTransition=(update:()=>void)=>{
@@ -54,4 +54,4 @@ function App() {
 
 const root=document.getElementById('root');
 if(!root)throw new Error('Root element not found');
-createRoot(root).render(<ErrorBoundary><Suspense fallback={<div className="loading">Loading workspace…</div>}><App/></Suspense></ErrorBoundary>);
+createRoot(root).render(<ErrorBoundary><App/></ErrorBoundary>);

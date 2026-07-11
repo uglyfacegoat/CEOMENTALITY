@@ -58,3 +58,12 @@ test('sidebar toggle does not follow the viewport while the sidebar is open',asy
  expect(after).not.toBeNull();
  expect(after!.y).toBeLessThan(before!.y-300);
 });
+
+test('does not replace the workspace with a loading screen during navigation',async({page})=>{
+ await authenticatedPage(page);
+ const loading=page.getByText('Loading workspace…',{exact:true});
+ for(const route of ['Access Codes','Analytics','Candidate Dossiers']){
+  await page.getByRole('button',{name:route,exact:true}).click();
+  await expect(loading).toHaveCount(0);
+ }
+});
