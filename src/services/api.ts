@@ -1,6 +1,8 @@
+import type { WorkspaceState } from '../types/domain';
+
 const STORAGE_KEY = 'ceomentality:mvp:v1';
 
-export const seedState = {
+export const seedState: WorkspaceState = {
   candidates: [
     { id: 'alexei-petrov', name: 'Alexei Petrov', initials: 'AP', role: 'Founder / CEO', company: 'Northtrail', status: 'Under review', wave: 'Wave 02', code: null, notes: ['AI infrastructure for logistics.'], summary: 'Serial founder with two exits. Building in AI + supply chain with global ambitions.', expertise: 'Founder / CEO', country: 'Switzerland', telegram: '@alexei', source: 'Website', stage: 'purchase', appliedAt: '2025-04-30' },
     { id: 'maria-ivanova', name: 'Maria Ivanova', initials: 'MI', role: 'Investor', company: 'Vision Capital', status: 'Approved', wave: 'Wave 01', code: 'CM-W1-7X9K-PLATINUM', notes: ['Strong investor network in EU.'], summary: 'Early-stage investor focused on deep tech and infrastructure.', expertise: 'Investor', country: 'Germany', telegram: '@maria', source: 'Partner', stage: 'purchase', appliedAt: '2025-04-27' },
@@ -21,16 +23,16 @@ export const seedState = {
   activity: [{ id: 'seed', type: 'System initialized', detail: 'MVP demo workspace is ready', at: new Date().toISOString() }],
 };
 
-const wait = (value) => new Promise((resolve) => setTimeout(() => resolve(structuredClone(value)), 120));
-const read = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || structuredClone(seedState);
-const write = (state) => { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return state; };
+const wait = <T,>(value: T): Promise<T> => new Promise((resolve) => setTimeout(() => resolve(structuredClone(value)), 120));
+const read = (): WorkspaceState => JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') as WorkspaceState | null || structuredClone(seedState);
+const write = (state: WorkspaceState): WorkspaceState => { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return state; };
 
 // Replace this adapter with HTTP calls later. Components only depend on this contract.
 export const api = {
   load: () => wait(read()),
-  save: (state) => wait(write(state)),
+  save: (state: WorkspaceState) => wait(write(state)),
   // Future backend contract: replace the local index with GET /api/search?q=...
-  search: (query) => {
+  search: (query: string) => {
     const state = read();
     const needle = query.trim().toLowerCase();
     return wait({
@@ -43,5 +45,5 @@ export const api = {
     });
   },
   reset: () => { localStorage.removeItem(STORAGE_KEY); return wait(seedState); },
-  export: (state) => new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }),
+  export: (state: WorkspaceState) => new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }),
 };
