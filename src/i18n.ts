@@ -391,19 +391,3 @@ export function translateText(value:string, language:Language):string {
     .replace(/\b(\d+) дн\b/g,'$1 days').replace(/\b(\d+) кодов\b/g,'$1 codes').replace(/\b(\d+) участников\b/g,'$1 participants');
   return result;
 }
-
-export function localizeDocument(root:HTMLElement|null, language:Language):void {
-  if (!root) return;
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
-  for (const current of nodes) {
-    const node=current as Text;
-    if (['SCRIPT','STYLE'].includes(node.parentElement?.tagName??'')) continue;
-    const value=node.nodeValue??'';
-    if (node.parentElement?.matches('.pretitle,.content h1,.system-label')) { const english=translateText(value,'en'); if(english!==value) node.nodeValue=english; continue; }
-    const translated=translateText(value,language); if(translated!==value) node.nodeValue=translated;
-  }
-  root.querySelectorAll?.('[placeholder],[title],[aria-label]').forEach(element=>{
-    for(const attribute of ['placeholder','title','aria-label']) { const value=element.getAttribute(attribute); if(value!==null) element.setAttribute(attribute,translateText(value,language)); }
-  });
-}

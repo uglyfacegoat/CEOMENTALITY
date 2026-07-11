@@ -2,3 +2,5 @@ node_modules/
 dist/
 .figma-reference/
 *.log
+test-results/
+playwright-report/
