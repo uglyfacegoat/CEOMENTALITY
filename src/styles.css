@@ -321,6 +321,13 @@ h1 {
 .dossiers h1 { font-size: 56px; line-height: .9; white-space: nowrap; }
 .content p { margin: 12px 0 0; color: var(--muted); font-size: 16px; line-height: 1.35; }
 .pretitle { margin: 0 0 18px; color: var(--blue); }
+.pretitle-amp {
+  display: inline-block;
+  margin: 0 .08em;
+  font-weight: 400;
+  letter-spacing: 0;
+  transform: translateY(-.02em);
+}
 .hero-row, .page-title-row, .analytics-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; margin-bottom: 26px; }
 .analytics-head { align-items: center; margin-bottom: 28px; }
 .button-row { display: flex; gap: 16px; align-items: center; margin-top: 4px; }
