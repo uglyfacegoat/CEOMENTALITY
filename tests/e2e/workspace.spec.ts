@@ -74,3 +74,14 @@ test('keeps profile page titles in English in the Russian interface',async({page
  await expect(page.locator('.profile-page .pretitle')).toHaveText('Account & access');
  await expect(page.getByRole('heading',{name:'profile settings'})).toBeVisible();
 });
+
+test('renders Profile & settings as one label without splitting the ampersand',async({page})=>{
+ await authenticatedPage(page);
+ await page.getByRole('button',{name:'CM',exact:true}).click();
+ const profileAction=page.getByRole('button',{name:/Profile & settings/i});
+ await expect(profileAction).toBeVisible();
+ expect(await profileAction.evaluate(element=>({
+  text:element.textContent?.replace(/\s+/g,' ').trim(),
+  elements:element.childElementCount
+ }))).toEqual({text:'Profile & settings',elements:1});
+});

@@ -1,0 +1,57 @@
+import { expect, test, type Page } from '@playwright/test';
+
+const viewports=[
+ {name:'small phone',width:360,height:800},
+ {name:'phone',width:390,height:844},
+ {name:'large phone',width:430,height:932},
+ {name:'tablet portrait',width:768,height:1024},
+ {name:'tablet landscape',width:1024,height:768},
+ {name:'laptop',width:1366,height:768},
+ {name:'desktop',width:1920,height:1080},
+ {name:'wide desktop',width:2560,height:1440}
+] as const;
+
+const routes=['/candidates','/candidates/alexei-petrov','/access-codes','/analytics','/profile'] as const;
+
+async function openAuthenticated(page:Page,path:string) {
+ await page.addInitScript(()=>localStorage.setItem('ceomentality:session','active'));
+ await page.goto(path);
+ await expect(page.getByRole('banner')).toBeVisible();
+ await expect(page.locator('main.content')).toBeVisible();
+}
+
+for(const viewport of viewports)test(`${viewport.name}: all workspace pages fit the viewport`,async({page})=>{
+ await page.setViewportSize({width:viewport.width,height:viewport.height});
+ for(const route of routes){
+  await openAuthenticated(page,route);
+  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
+  expect(overflow,`${route} creates body-level horizontal overflow`).toBeLessThanOrEqual(1);
+  const main=await page.locator('main.content').boundingBox();
+  expect(main).not.toBeNull();
+  expect(main!.x).toBeGreaterThanOrEqual(0);
+  expect(main!.x+main!.width).toBeLessThanOrEqual(viewport.width+1);
+ }
+});
+
+test('small phone: login and overlays stay inside the viewport',async({page})=>{
+ await page.setViewportSize({width:360,height:800});
+ await page.goto('/login');
+ await expect(page.locator('.login-card')).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
+ await page.addInitScript(()=>localStorage.setItem('ceomentality:session','active'));
+ await page.goto('/access-codes');
+ await page.locator('.date-trigger').first().click();
+ const calendar=await page.locator('.calendar-popover').boundingBox();
+ expect(calendar).not.toBeNull();
+ expect(calendar!.x).toBeGreaterThanOrEqual(0);
+ expect(calendar!.x+calendar!.width).toBeLessThanOrEqual(360);
+});
+
+test('desktop: reference layout dimensions stay unchanged',async({page})=>{
+ await page.setViewportSize({width:1920,height:1080});
+ await openAuthenticated(page,'/candidates');
+ await expect(page.locator('.sidebar')).toHaveCSS('width','260px');
+ await expect(page.locator('.brand')).toHaveCSS('font-size','22px');
+ await expect(page.locator('.cards-grid')).toHaveCSS('grid-template-columns',/^(?:\d+(?:\.\d+)?px\s+){2}\d+(?:\.\d+)?px$/);
+ await expect(page.locator('.candidate-card')).toHaveCount(9);
+});
