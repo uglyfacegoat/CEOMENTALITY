@@ -13,12 +13,15 @@
   backdrop-filter: blur(12px);
 }
 .brand {
-  width: 230px;
+  flex: 0 0 258px;
+  width: 258px;
   font-size: 22px;
   line-height: 1;
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: .27em;
   text-align: left;
+  -webkit-text-stroke: .35px currentColor;
+  paint-order: stroke fill;
 }
 .system-label {
   border-left: 1px solid var(--line);
@@ -870,6 +873,56 @@ label, .mini-grid label, .notes label, .metric-mini label, .validity label {
 .toast { position:fixed; z-index:80; right:24px; bottom:24px; min-width:220px; padding:14px 18px; border-radius:10px; color:#fff; background:var(--ink); box-shadow:0 16px 40px rgba(0,25,92,.24); font-weight:700; animation:toast-in .25s ease; }
 @keyframes fade { from { opacity:0 } }
 @keyframes toast-in { from { opacity:0; transform:translateY(10px) } }
+
+/* Lightweight motion layer: compositor-friendly opacity/transform only. */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes dialog-enter {
+  from { opacity: 0; transform: translateY(7px) scale(.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.content,
+.login-card { animation: page-enter .2s cubic-bezier(.2,.75,.25,1) both; }
+.modal { animation: dialog-enter .18s cubic-bezier(.2,.75,.25,1) both; }
+.primary-btn,
+.outline-btn,
+.date-btn,
+.wide-outline,
+.generate,
+.login-submit,
+.calendar-popover button,
+.custom-options button,
+.context-menu button,
+.batch-menu button {
+  transition: color .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .18s ease, transform .15s ease;
+}
+.primary-btn:hover,
+.generate:hover,
+.login-submit:hover { transform: translateY(-1px); }
+.outline-btn:hover,
+.wide-outline:hover,
+.date-btn:hover { border-color: #b9c9e2; box-shadow: 0 5px 14px rgba(0,25,92,.06); }
+.primary-btn:active,
+.outline-btn:active,
+.date-btn:active,
+.wide-outline:active,
+.generate:active,
+.login-submit:active { transform: translateY(0) scale(.985); }
+.batch-row,
+.note-row,
+.activity-row,
+.performance tbody tr { transition: background-color .16s ease, border-color .16s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
 .batch-row:last-child { border-bottom: 0; }
 .batch-row > div:nth-child(2) { border-right: 1px solid var(--line-2); padding-right: 18px; }
 .batch-row strong { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; }
