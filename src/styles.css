@@ -886,6 +886,26 @@ label, .mini-grid label, .notes label, .metric-mini label, .validity label {
 .content,
 .login-card { animation: page-enter .2s cubic-bezier(.2,.75,.25,1) both; }
 .modal { animation: dialog-enter .18s cubic-bezier(.2,.75,.25,1) both; }
+
+@supports (view-transition-name: none) {
+  .content {
+    view-transition-name: workspace-page;
+    animation: none;
+  }
+  ::view-transition-group(workspace-page) { animation-duration: .24s; }
+  ::view-transition-old(workspace-page) {
+    animation: .24s cubic-bezier(.4,0,.6,1) both workspace-page-out;
+  }
+  ::view-transition-new(workspace-page) {
+    animation: .24s cubic-bezier(.2,.75,.25,1) both workspace-page-in;
+  }
+}
+@keyframes workspace-page-out {
+  to { opacity: 0; transform: translateY(-3px); }
+}
+@keyframes workspace-page-in {
+  from { opacity: 0; transform: translateY(5px); }
+}
 .primary-btn,
 .outline-btn,
 .date-btn,
