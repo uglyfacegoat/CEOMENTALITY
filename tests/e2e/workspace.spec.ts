@@ -46,3 +46,15 @@ test('switches translated UI while keeping branded headings in English',async({p
  await expect(page.getByRole('heading',{name:'candidate dossiers'})).toBeVisible();
  await expect(page.evaluate(()=>document.documentElement.lang)).resolves.toBe('ru');
 });
+
+test('sidebar toggle does not follow the viewport while the sidebar is open',async({page})=>{
+ await authenticatedPage(page,'/candidates/alexei-petrov');
+ const toggle=page.getByRole('button',{name:/hide sidebar/i});
+ const before=await toggle.boundingBox();
+ await page.evaluate(()=>window.scrollTo(0,700));
+ await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBeGreaterThan(300);
+ const after=await toggle.boundingBox();
+ expect(before).not.toBeNull();
+ expect(after).not.toBeNull();
+ expect(after!.y).toBeLessThan(before!.y-300);
+});

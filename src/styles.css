@@ -132,9 +132,9 @@
   transition: width .22s ease, padding .22s ease, opacity .16s ease;
 }
 .sidebar-toggle {
-  position: fixed;
+  position: absolute;
   z-index: 9;
-  top: 76px;
+  top: 8px;
   left: 224px;
   display: grid;
   place-items: center;
@@ -160,6 +160,8 @@
   width: 28px;
 }
 .sidebar-collapsed .sidebar-toggle {
+  position: fixed;
+  top: 76px;
   left: -34px;
   opacity: 0;
   pointer-events: none;
