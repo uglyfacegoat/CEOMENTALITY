@@ -99,10 +99,16 @@ test('iPad Pro portrait: candidate hero and cards stay inside the workspace',asy
  await openAuthenticated(page,'/candidates');
  const content=await page.locator('main.content').boundingBox();
  const metrics=await page.locator('.metric-strip.compact').boundingBox();
+ const toggle=await page.locator('.header-sidebar-toggle-desktop').boundingBox();
+ const firstTab=await page.locator('.main-nav button').first().boundingBox();
  expect(content).not.toBeNull();
  expect(metrics).not.toBeNull();
  expect(metrics!.x).toBeGreaterThanOrEqual(content!.x);
  expect(metrics!.x+metrics!.width).toBeLessThanOrEqual(1024);
+ expect(toggle).not.toBeNull();
+ expect(firstTab).not.toBeNull();
+ expect(toggle!.x+toggle!.width).toBeLessThan(firstTab!.x);
+ expect(Math.abs((toggle!.y+toggle!.height/2)-(firstTab!.y+firstTab!.height/2))).toBeLessThanOrEqual(2);
  const cardEdges=await page.locator('.candidate-card').evaluateAll(cards=>cards.map(card=>card.getBoundingClientRect().right));
  expect(Math.max(...cardEdges)).toBeLessThanOrEqual(1024);
  await expect(page.locator('.metric-strip.compact .metric')).toHaveCount(4);
