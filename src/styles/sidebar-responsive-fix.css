@@ -4,6 +4,8 @@
 @media (min-width: 901px) {
   .header-sidebar-toggle-desktop {
     display: grid !important;
+    flex: 0 0 32px;
+    margin: 0;
     visibility: visible;
     pointer-events: auto;
   }
@@ -18,12 +20,12 @@
   }
 }
 
-/* Single-row desktop header. The sidebar trigger owns a permanent grid slot,
-   so showing or hiding it cannot push the navigation left or right. */
+/* Single-row desktop header. The navigation stays in its own flexible column,
+   while the sidebar trigger lives with the other system actions. */
 @media (min-width: 1041px) {
   .topbar {
     display: grid;
-    grid-template-columns: auto auto 40px minmax(0, 1fr) auto;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
     grid-template-rows: 68px;
     column-gap: 0;
   }
@@ -38,16 +40,8 @@
     grid-row: 1;
   }
 
-  .header-sidebar-toggle-desktop {
-    grid-column: 3;
-    grid-row: 1;
-    justify-self: center;
-    align-self: center;
-    margin: 0;
-  }
-
   .main-nav {
-    grid-column: 4;
+    grid-column: 3;
     grid-row: 1;
     justify-self: center;
     justify-content: center;
@@ -57,7 +51,7 @@
   }
 
   .top-actions {
-    grid-column: 5;
+    grid-column: 4;
     grid-row: 1;
     margin-left: 24px;
   }
