@@ -1483,6 +1483,13 @@ td span { display: block; color: #536a9f; font-weight: 500; }
   .sidebar-toggle,.sidebar-reveal-zone { display: none !important; }
 }
 
+@media (min-width: 1200px) {
+  .header-sidebar-toggle-desktop { display: none !important; }
+  .sidebar-toggle { position: fixed; top: 76px; left: 224px; display: grid !important; }
+  .sidebar-collapsed .sidebar-reveal-zone { display: block !important; }
+  .sidebar-collapsed .sidebar-toggle { display: grid !important; }
+}
+
 @media (max-width: 900px) {
   .header-sidebar-toggle-desktop { display: none !important; }
   .header-sidebar-toggle-mobile { display: grid !important; }
