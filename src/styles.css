@@ -1512,6 +1512,12 @@ td span { display: block; color: #536a9f; font-weight: 500; }
   }
   .app-shell .sidebar::-webkit-scrollbar { display: none; }
   .app-shell .sidebar .check-group,.app-shell .sidebar .filter-block { display: block; }
+  .app-shell .sidebar .filter-head,.app-shell .sidebar .search-box,.app-shell .sidebar .check-group,.app-shell .sidebar .filter-block,.app-shell .sidebar .save-view { flex-shrink: 0; }
+  .mobile-sidebar-open .sidebar .search-box { width: 100%; max-width: none; height: 54px; padding-inline: 18px; border-radius: 11px; }
+  .mobile-sidebar-open .sidebar .search-box svg { width: 19px; height: 19px; }
+  .mobile-sidebar-open .sidebar .search-box input { min-width: 0; font-size: 14px; }
+  .mobile-sidebar-open .sidebar .save-view,html[lang="ru"] .mobile-sidebar-open .sidebar .save-view { width: 100%; max-width: none; height: 58px; margin-top: 20px; padding-inline: 22px; border-radius: 30px; justify-content: center; font-size: 16px; }
+  .mobile-sidebar-open .sidebar .save-view svg { width: 20px; height: 20px; }
   .mobile-sidebar-open .sidebar {
     width: min(352px,calc(100vw - 32px));
     padding: 68px 24px 28px;

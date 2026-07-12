@@ -43,6 +43,7 @@ test('switches translated UI while keeping branded headings in English',async({p
  await authenticatedPage(page);
  await page.getByRole('button',{name:/switch interface language/i}).click();
  await expect(page.getByText('Фильтры',{exact:true})).toBeVisible();
+ await expect(page.locator('.main-nav button').nth(1)).not.toHaveText('Access Codes');
  await expect(page.getByRole('heading',{name:'candidate dossiers'})).toBeVisible();
  await expect(page.evaluate(()=>document.documentElement.lang)).resolves.toBe('ru');
 });

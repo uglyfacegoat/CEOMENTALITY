@@ -62,7 +62,7 @@ test('phone: analytics labels and chart scale remain aligned',async({page})=>{
 
 test('phone: filters open as a dismissible drawer',async({page})=>{
  await page.setViewportSize({width:390,height:844});
- await openAuthenticated(page,'/analytics');
+ await openAuthenticated(page,'/candidates');
  const sidebar=page.locator('.sidebar');
  await expect(sidebar).toHaveCSS('pointer-events','none');
  await page.getByRole('button',{name:/show filters/i}).click();
@@ -70,6 +70,11 @@ test('phone: filters open as a dismissible drawer',async({page})=>{
  await expect(page.locator('.mobile-sidebar-scrim')).toHaveCSS('pointer-events','auto');
  await expect(sidebar.locator('.check-group').first()).toBeVisible();
  await expect(sidebar.locator('.filter-block').first()).toBeVisible();
+ const search=await sidebar.locator('.search-box').boundingBox();
+ const save=await sidebar.locator('.save-view').boundingBox();
+ expect(search?.height).toBeGreaterThanOrEqual(53);
+ expect(save?.height).toBeGreaterThanOrEqual(57);
+ expect(Math.abs((search?.width??0)-(save?.width??0))).toBeLessThanOrEqual(1);
  await expect.poll(async()=>Math.round((await sidebar.boundingBox())?.x??-999)).toBe(0);
  const drawer=await sidebar.boundingBox();
  expect(drawer).not.toBeNull();

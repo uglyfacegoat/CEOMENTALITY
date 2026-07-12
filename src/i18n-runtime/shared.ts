@@ -3,7 +3,7 @@ import { translateText } from '../i18n';
 
 let language:Language=localStorage.getItem('ceomentality:language')==='ru'?'ru':'en';
 const translatedProps=new Set(['children','label','title','placeholder','aria-label']);
-const alwaysEnglish=new Set(['CEOMENTALITY','access system','Simple CRM','Candidate dossier','Access Codes','candidate dossiers','access codes','analytics']);
+const alwaysEnglish=new Set(['CEOMENTALITY','access system','Simple CRM','Candidate dossier','candidate dossiers','access codes','analytics']);
 
 export function setRuntimeLanguage(next:Language):void { language=next }
 
