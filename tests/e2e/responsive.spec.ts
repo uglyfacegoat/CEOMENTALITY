@@ -60,6 +60,23 @@ test('phone: analytics labels and chart scale remain aligned',async({page})=>{
  expect(Math.abs(svg!.height-axis!.height)).toBeLessThanOrEqual(1);
 });
 
+test('phone: filters open as a dismissible drawer',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await openAuthenticated(page,'/analytics');
+ const sidebar=page.locator('.sidebar');
+ await expect(sidebar).toHaveCSS('pointer-events','none');
+ await page.getByRole('button',{name:/show filters/i}).click();
+ await expect(sidebar).toHaveCSS('pointer-events','auto');
+ await expect(page.locator('.mobile-sidebar-scrim')).toHaveCSS('pointer-events','auto');
+ await expect.poll(async()=>Math.round((await sidebar.boundingBox())?.x??-999)).toBe(0);
+ const drawer=await sidebar.boundingBox();
+ expect(drawer).not.toBeNull();
+ expect(drawer!.x).toBe(0);
+ expect(drawer!.width).toBeLessThan(390);
+ await sidebar.getByRole('button',{name:/hide filters/i}).click();
+ await expect(sidebar).toHaveCSS('pointer-events','none');
+});
+
 test('desktop: reference layout dimensions stay unchanged',async({page})=>{
  await page.setViewportSize({width:1920,height:1080});
  await openAuthenticated(page,'/candidates');

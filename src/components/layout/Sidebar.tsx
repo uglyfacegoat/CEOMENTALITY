@@ -3,16 +3,16 @@ import { Icon } from '../ui/Icon';
 import { CustomSelect } from '../ui/CustomSelect';
 import type { Candidate, WorkspaceFilters } from '../../types/domain';
 
-interface SidebarProps { mode:string; query:string; setQuery:(value:string)=>void; filters:WorkspaceFilters; setFilters:Dispatch<SetStateAction<WorkspaceFilters>>; candidates:Candidate[]; reset:()=>void }
+interface SidebarProps { mode:string; query:string; setQuery:(value:string)=>void; filters:WorkspaceFilters; setFilters:Dispatch<SetStateAction<WorkspaceFilters>>; candidates:Candidate[]; reset:()=>void; onClose?:()=>void }
 interface SelectSideProps { label:string; value:string; onChange:(value:string)=>void; options?:string[] }
 interface FilterGroupProps { title:string; items:string[]; counts?:Record<string,number>; value:string; setValue:(value:string)=>void; radio?:boolean }
 
-export function Sidebar({mode,query,setQuery,filters,setFilters,candidates,reset}:SidebarProps) {
+export function Sidebar({mode,query,setQuery,filters,setFilters,candidates,reset,onClose}:SidebarProps) {
   const [viewSaved,setViewSaved]=useState(()=>Boolean(localStorage.getItem('ceomentality:view')));
   const counts = candidates.length ? {'Under review':24,'Approved':32,'Code assigned':48,'Waitlisted':16,'Rejected':7} : {};
   const candidatesMode = mode === 'Candidate Dossiers';
   const accessMode = mode === 'Access Codes';
-  return <aside className="sidebar">
+  return <aside className="sidebar"><button className="sidebar-drawer-close" onClick={onClose} aria-label="Hide filters"><Icon name="sidebar" size={20}/></button>
     <div className="filter-head"><span>Filters</span><button onClick={reset}>Clear all</button></div>
     {!mode.includes('Analytics') && <label className="search-box"><Icon name="search" size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={candidatesMode?'Search participants...':'Search codes or batches...'}/></label>}
     {mode === 'Analytics' && <><SelectSide label="Drop" value={filters.drop||'All drops'} options={['All drops','Wave 01','Wave 02','Partner Access','Waitlist Release']} onChange={v=>setFilters({...filters,drop:v})}/><SelectSide label="Wave" value={filters.wave==='All'?'All waves':filters.wave} options={['All waves','Wave 01','Wave 02','Wave 03','Wave 04']} onChange={v=>setFilters({...filters,wave:v==='All waves'?'All':v})}/></>}

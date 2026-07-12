@@ -47,16 +47,13 @@ test('switches translated UI while keeping branded headings in English',async({p
  await expect(page.evaluate(()=>document.documentElement.lang)).resolves.toBe('ru');
 });
 
-test('sidebar toggle does not follow the viewport while the sidebar is open',async({page})=>{
+test('desktop header toggle collapses and restores the sidebar',async({page})=>{
  await authenticatedPage(page,'/candidates/alexei-petrov');
- const toggle=page.getByRole('button',{name:/hide sidebar/i});
- const before=await toggle.boundingBox();
- await page.evaluate(()=>window.scrollTo(0,700));
- await expect.poll(()=>page.evaluate(()=>window.scrollY)).toBeGreaterThan(300);
- const after=await toggle.boundingBox();
- expect(before).not.toBeNull();
- expect(after).not.toBeNull();
- expect(after!.y).toBeLessThan(before!.y-300);
+ const toggle=page.getByRole('button',{name:/hide filters/i});
+ await toggle.click();
+ await expect(page.locator('.sidebar')).toHaveCSS('width','0px');
+ await page.getByRole('button',{name:/show filters/i}).click();
+ await expect(page.locator('.sidebar')).toHaveCSS('width','260px');
 });
 
 test('does not replace the workspace with a loading screen during navigation',async({page})=>{

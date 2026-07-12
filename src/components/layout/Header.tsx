@@ -5,15 +5,16 @@ import type { AppRoute, Candidate, Language } from '../../types/domain';
 
 const tabs:Exclude<AppRoute,'Profile'>[]=['Candidate Dossiers','Access Codes','Analytics'];
 type Panel='search'|'notifications'|'profile'|null;
-interface HeaderProps { active:string; navigate:(route:AppRoute)=>void; candidates:Candidate[]; openCandidate:(id:string)=>void; openProfile:()=>void; onLogout:()=>void; language:Language; setLanguage:(language:Language)=>void }
+interface HeaderProps { active:string; navigate:(route:AppRoute)=>void; candidates:Candidate[]; openCandidate:(id:string)=>void; openProfile:()=>void; onLogout:()=>void; language:Language; setLanguage:(language:Language)=>void; hasSidebar:boolean; desktopSidebarOpen:boolean; mobileSidebarOpen:boolean; toggleSidebar:()=>void }
 interface NotificationProps { tone:string; title:string; text:string; time:string; onOpen:()=>void }
 
-export function Header({active,navigate,candidates,openCandidate,openProfile,onLogout,language,setLanguage}:HeaderProps) {
+export function Header({active,navigate,candidates,openCandidate,openProfile,onLogout,language,setLanguage,hasSidebar,desktopSidebarOpen,mobileSidebarOpen,toggleSidebar}:HeaderProps) {
   const [panel,setPanel]=useState<Panel>(null);
   const [search,setSearch]=useState('');
   const results=search.trim()?candidates.filter(c=>(c.name+' '+c.company+' '+c.telegram).toLowerCase().includes(search.toLowerCase())).slice(0,6):[];
   const close=()=>{setPanel(null);setSearch('')};
-  return <header className="topbar"><button className="brand" onClick={()=>{close();navigate('Candidate Dossiers')}} aria-label="Open candidate dossiers">CEOMENTALITY</button><div className="system-label">access system</div><nav className="main-nav">{tabs.map(t=><button key={t} className={active===t?'active':''} onClick={()=>{close();navigate(t)}}>{t}</button>)}</nav><div className="top-actions"><button className={`language-switch ${language}`} onClick={()=>setLanguage(language==='en'?'ru':'en')} aria-label="Switch interface language"><span>{languages.en}</span><i/><span>{languages.ru}</span></button>
+  const closeMobileSidebar=()=>{if(mobileSidebarOpen)toggleSidebar()};
+  return <header className="topbar"><button className="brand" onClick={()=>{close();closeMobileSidebar();navigate('Candidate Dossiers')}} aria-label="Open candidate dossiers">CEOMENTALITY</button><div className="system-label">access system</div>{hasSidebar&&<><button className="header-sidebar-toggle header-sidebar-toggle-desktop" onClick={toggleSidebar} aria-label={desktopSidebarOpen?'Hide filters':'Show filters'} aria-expanded={desktopSidebarOpen}><Icon name="sidebar" size={20}/></button><button className="header-sidebar-toggle header-sidebar-toggle-mobile" onClick={toggleSidebar} aria-label={mobileSidebarOpen?'Hide filters':'Show filters'} aria-expanded={mobileSidebarOpen}><Icon name="sidebar" size={20}/></button></>}<nav className="main-nav">{tabs.map(t=><button key={t} className={active===t?'active':''} onClick={()=>{close();closeMobileSidebar();navigate(t)}}>{t}</button>)}</nav><div className="top-actions"><button className={`language-switch ${language}`} onClick={()=>setLanguage(language==='en'?'ru':'en')} aria-label="Switch interface language"><span>{languages.en}</span><i/><span>{languages.ru}</span></button>
     <button className={`icon-btn ${panel==='search'?'is-open':''}`} aria-label="Search" onClick={()=>setPanel(panel==='search'?null:'search')}><Icon name="search"/></button>
     <button className={`icon-btn notification-trigger ${panel==='notifications'?'is-open':''}`} aria-label="Notifications" onClick={()=>setPanel(panel==='notifications'?null:'notifications')}><Icon name="bell"/><span className="notification-dot"/></button>
     <button className={`avatar ${panel==='profile'?'is-open':''}`} onClick={()=>setPanel(panel==='profile'?null:'profile')}>CM</button>
