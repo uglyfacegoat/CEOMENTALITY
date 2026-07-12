@@ -94,6 +94,20 @@ test('phone: candidate list cards wrap without clipping',async({page})=>{
  await expect(page.locator('.cards-grid.list .notes p').first()).toHaveCSS('white-space','normal');
 });
 
+test('iPad Pro portrait: candidate hero and cards stay inside the workspace',async({page})=>{
+ await page.setViewportSize({width:1024,height:1366});
+ await openAuthenticated(page,'/candidates');
+ const content=await page.locator('main.content').boundingBox();
+ const metrics=await page.locator('.metric-strip.compact').boundingBox();
+ expect(content).not.toBeNull();
+ expect(metrics).not.toBeNull();
+ expect(metrics!.x).toBeGreaterThanOrEqual(content!.x);
+ expect(metrics!.x+metrics!.width).toBeLessThanOrEqual(1024);
+ const cardEdges=await page.locator('.candidate-card').evaluateAll(cards=>cards.map(card=>card.getBoundingClientRect().right));
+ expect(Math.max(...cardEdges)).toBeLessThanOrEqual(1024);
+ await expect(page.locator('.metric-strip.compact .metric')).toHaveCount(4);
+});
+
 test('desktop: reference layout dimensions stay unchanged',async({page})=>{
  await page.setViewportSize({width:1920,height:1080});
  await openAuthenticated(page,'/candidates');
