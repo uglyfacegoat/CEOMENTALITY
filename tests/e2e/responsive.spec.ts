@@ -114,6 +114,28 @@ test('iPad Pro portrait: candidate hero and cards stay inside the workspace',asy
  await expect(page.locator('.metric-strip.compact .metric')).toHaveCount(4);
 });
 
+test('responsive boundaries: candidate workspace never clips',async({page})=>{
+ for(const width of [900,901,1040,1041,1100,1101,1180,1181,1280,1281,1360]){
+  await page.setViewportSize({width,height:900});
+  await openAuthenticated(page,'/candidates');
+  const viewportOverflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
+  expect(viewportOverflow,`${width}px creates body overflow`).toBeLessThanOrEqual(1);
+  const content=await page.locator('main.content').boundingBox();
+  const metrics=await page.locator('.metric-strip.compact').boundingBox();
+  expect(content,`${width}px content is missing`).not.toBeNull();
+  expect(metrics,`${width}px metrics are missing`).not.toBeNull();
+  expect(metrics!.x+metrics!.width,`${width}px metrics clip`).toBeLessThanOrEqual(width+1);
+  const cardEdges=await page.locator('.candidate-card').evaluateAll(cards=>cards.map(card=>card.getBoundingClientRect().right));
+  expect(Math.max(...cardEdges),`${width}px cards clip`).toBeLessThanOrEqual(width+1);
+  if(width>=1041){
+   const toggle=await page.locator('.header-sidebar-toggle-desktop').boundingBox();
+   const firstTab=await page.locator('.main-nav button').first().boundingBox();
+   expect(toggle!.x+toggle!.width,`${width}px toggle is not next to navigation`).toBeLessThanOrEqual(firstTab!.x);
+   expect(firstTab!.x-(toggle!.x+toggle!.width),`${width}px toggle is too far from navigation`).toBeLessThanOrEqual(24);
+  }
+ }
+});
+
 test('desktop: reference layout dimensions stay unchanged',async({page})=>{
  await page.setViewportSize({width:1920,height:1080});
  await openAuthenticated(page,'/candidates');

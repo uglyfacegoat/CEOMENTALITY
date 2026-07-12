@@ -32,7 +32,7 @@
 .main-nav {
   position: static;
   display: flex;
-  margin-left: auto;
+  margin-left: 12px;
   height: 68px;
   gap: 36px;
 }
@@ -55,7 +55,7 @@
 }
 .top-actions { margin-left: 32px; display: flex; align-items: center; gap: 18px; }
 .header-sidebar-toggle,.sidebar-drawer-close { display: grid; place-items: center; width: 32px; height: 32px; color: var(--ink); transition: color .16s ease, transform .2s ease; }
-.header-sidebar-toggle { flex: 0 0 32px; margin-left: 24px; }
+.header-sidebar-toggle { flex: 0 0 32px; margin-left: auto; }
 .header-sidebar-toggle:hover,.sidebar-drawer-close:hover { color: var(--blue); }
 .header-sidebar-toggle[aria-expanded="false"] { transform: scaleX(-1); }
 .header-sidebar-toggle-mobile { display: none !important; }
@@ -326,6 +326,7 @@ h1 {
 .content p { margin: 12px 0 0; color: var(--muted); font-size: 16px; line-height: 1.35; }
 .pretitle { margin: 0 0 18px; color: var(--blue); }
 .hero-row, .page-title-row, .analytics-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; margin-bottom: 26px; }
+.dossiers .hero-row { flex-wrap: wrap; }
 .analytics-head { align-items: center; margin-bottom: 28px; }
 .button-row { display: flex; gap: 16px; align-items: center; margin-top: 4px; }
 .primary-btn, .outline-btn, .date-btn {
@@ -1258,7 +1259,7 @@ td span { display: block; color: #536a9f; font-weight: 500; }
   .analytics-head .button-row { flex: 0 0 auto; }
 }
 
-@media (min-width: 901px) and (max-width: 1100px) {
+@media (min-width: 901px) and (max-width: 1280px) {
   .dossiers .hero-row { flex-direction: column; align-items: stretch; }
   .dossiers .metric-strip.compact { flex: 0 0 auto; width: 100%; }
   .dossiers .metric-strip.compact .metric { min-width: 0; }
