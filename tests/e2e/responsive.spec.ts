@@ -47,6 +47,19 @@ test('small phone: login and overlays stay inside the viewport',async({page})=>{
  expect(calendar!.x+calendar!.width).toBeLessThanOrEqual(360);
 });
 
+test('phone: analytics labels and chart scale remain aligned',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await openAuthenticated(page,'/analytics');
+ await expect(page.locator('.funnel-labels p')).toHaveCount(4);
+ await expect(page.locator('.funnel-values p')).toHaveCount(4);
+ const svg=await page.locator('.chart svg').boundingBox();
+ const axis=await page.locator('.chart .y-axis').boundingBox();
+ expect(svg).not.toBeNull();
+ expect(axis).not.toBeNull();
+ expect(svg!.height).toBeGreaterThanOrEqual(129);
+ expect(Math.abs(svg!.height-axis!.height)).toBeLessThanOrEqual(1);
+});
+
 test('desktop: reference layout dimensions stay unchanged',async({page})=>{
  await page.setViewportSize({width:1920,height:1080});
  await openAuthenticated(page,'/candidates');
