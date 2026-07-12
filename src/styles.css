@@ -1511,6 +1511,7 @@ td span { display: block; color: #536a9f; font-weight: 500; }
     scrollbar-width: none;
   }
   .app-shell .sidebar::-webkit-scrollbar { display: none; }
+  .app-shell .sidebar .check-group,.app-shell .sidebar .filter-block { display: block; }
   .mobile-sidebar-open .sidebar {
     width: min(352px,calc(100vw - 32px));
     padding: 68px 24px 28px;
@@ -1546,4 +1547,19 @@ td span { display: block; color: #536a9f; font-weight: 500; }
   .main-nav { gap: 2px; }
   .main-nav button { padding-inline: 8px; font-size: 11px; }
   .app-shell .sidebar,.mobile-sidebar-open .sidebar { width: min(340px,calc(100vw - 24px)); padding-inline: 22px; }
+  .cards-grid.list,.cards-grid.list .candidate-card { width: 100%; min-width: 0; max-width: 100%; }
+  .cards-grid.list .candidate-card { overflow: hidden; padding: 16px; }
+  .cards-grid.list .card-status,.cards-grid.list .person,.cards-grid.list .mini-grid,.cards-grid.list .notes { min-width: 0; max-width: 100%; }
+  .cards-grid.list .card-status { display: flex; margin-bottom: 13px; }
+  .cards-grid.list .card-status em { flex: 0 0 auto; margin: 0 0 0 auto; }
+  .cards-grid.list .person { margin-top: 0; padding-bottom: 13px; }
+  .cards-grid.list .initials { flex: 0 0 46px; width: 46px; height: 46px; font-size: 17px; }
+  .cards-grid.list .person > div:last-child { min-width: 0; }
+  .cards-grid.list .person h2,.cards-grid.list .person p,.cards-grid.list .notes p { max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
+  .cards-grid.list .mini-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); align-self: auto; margin-top: 0; padding: 12px 0; border: 0; border-bottom: 1px solid var(--line-2); }
+  .cards-grid.list .mini-grid div:first-child { padding-right: 10px; }
+  .cards-grid.list .mini-grid div + div { padding-left: 12px; }
+  .cards-grid.list .notes { margin-top: 0; padding-top: 10px; padding-right: 28px; }
+  .cards-grid.list .notes p { display: -webkit-box; overflow: hidden; margin-block: 3px 7px; text-overflow: clip; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+  .cards-grid.list .arrow-link { right: 12px; bottom: 12px; }
 }

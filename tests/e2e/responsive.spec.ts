@@ -68,6 +68,8 @@ test('phone: filters open as a dismissible drawer',async({page})=>{
  await page.getByRole('button',{name:/show filters/i}).click();
  await expect(sidebar).toHaveCSS('pointer-events','auto');
  await expect(page.locator('.mobile-sidebar-scrim')).toHaveCSS('pointer-events','auto');
+ await expect(sidebar.locator('.check-group').first()).toBeVisible();
+ await expect(sidebar.locator('.filter-block').first()).toBeVisible();
  await expect.poll(async()=>Math.round((await sidebar.boundingBox())?.x??-999)).toBe(0);
  const drawer=await sidebar.boundingBox();
  expect(drawer).not.toBeNull();
@@ -75,6 +77,16 @@ test('phone: filters open as a dismissible drawer',async({page})=>{
  expect(drawer!.width).toBeLessThan(390);
  await sidebar.getByRole('button',{name:/hide filters/i}).click();
  await expect(sidebar).toHaveCSS('pointer-events','none');
+});
+
+test('phone: candidate list cards wrap without clipping',async({page})=>{
+ await page.setViewportSize({width:390,height:844});
+ await openAuthenticated(page,'/candidates');
+ await page.getByRole('button',{name:/switch candidate view/i}).click();
+ await expect(page.locator('.cards-grid')).toHaveClass(/list/);
+ const overflow=await page.locator('.candidate-card').evaluateAll(cards=>cards.map(card=>card.scrollWidth-card.clientWidth));
+ expect(Math.max(...overflow)).toBeLessThanOrEqual(2);
+ await expect(page.locator('.cards-grid.list .notes p').first()).toHaveCSS('white-space','normal');
 });
 
 test('desktop: reference layout dimensions stay unchanged',async({page})=>{
