@@ -18,6 +18,7 @@ import { ErrorBoundary } from './app/ErrorBoundary';
 import { parseRoute, writeRoute } from './app/routes';
 import type { AccessBatch, AppRoute, BatchDraft, Candidate, CandidateDraft, DropDraft, Language, SavedView, WorkspaceFilters, WorkspaceState } from './types/domain';
 import './styles.css';
+import './styles/sidebar-responsive-fix.css';
 
 const defaultFilters:WorkspaceFilters={status:'All',wave:'All',source:'All',expertise:'All'};
 const getSavedView=():SavedView|null=>{try{return JSON.parse(localStorage.getItem('ceomentality:view')||'null') as SavedView|null}catch{return null}};
