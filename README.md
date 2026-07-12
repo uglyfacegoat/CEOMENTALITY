@@ -1,380 +1,1244 @@
-# CEOMENTALITY Access System
+# Сводка проекта и подключение backend
 
-Frontend-MVP административной системы закрытого клуба. Приложение покрывает работу с кандидатами, дропами, кодами доступа, базовой аналитикой, профилем менеджера и локальной авторизацией.
-## Итог после рефакторинга
+## Назначение проекта
 
-### Актуальная оценка качества: 9.0/10
+**CEOMENTALITY Access System** — административная система управления закрытым клубом и ограниченным доступом.
 
-| Область | Было | Стало | Результат |
-|---|---:|---:|---|
-| Компонентная архитектура | 3/10 | 8.5/10 | Монолит разделён на layout, UI и feature-модули |
-| Типобезопасность | 1/10 | 9/10 | Строгий TypeScript, доменные union-типы, нет `@ts-nocheck` |
-| Data/API слой | 5/10 | 7.5/10 | Типизированный API-адаптер и единый контракт состояния |
-| Тестируемость | 2/10 | 7/10 | Добавлены unit-тесты selectors и обязательный typecheck |
-| Производительность | 5/10 | 8/10 | Страницы загружаются отдельными lazy chunks |
-| Поддерживаемость | 4/10 | 8.5/10 | `main.tsx` оставлен orchestration shell, страницы изолированы |
-| Локализация | 4/10 | 8.5/10 | Типизированный JSX-runtime переводит React-дерево без обхода DOM |
+Система предназначена для работы с:
 
-Оценка не завышена до 10/10: для production всё ещё нужны настоящий backend, серверная авторизация/RBAC и эталонные visual-regression snapshots.
+- кандидатами на вступление;
+- заявками на покупку и членство в клубе;
+- статусами отбора;
+- волнами доступа;
+- дропами;
+- уникальными и общими кодами доступа;
+- заметками менеджеров;
+- историей действий;
+- аналитикой воронки;
+- внутренними пользователями и ролями.
 
-## Аудит кода перед рефакторингом
+На текущем этапе реализован полноценный frontend-MVP. Backend пока заменён локальным API-адаптером и `localStorage`.
 
-Дата аудита: 11 июля 2026.
+---
 
-### Текущая оценка: 5.5/10
+## Технологический стек frontend
 
-| Область | Оценка | Состояние |
-|---|---:|---|
-| Визуальная реализация | 8/10 | Макеты и состояния подробно реализованы, визуал сохраняем без изменений |
-| Функциональность MVP | 7/10 | Основные frontend-сценарии работают на локальных данных |
-| Компонентная архитектура | 3/10 | Почти всё приложение находится в одном `main.tsx` |
-| Типобезопасность | 1/10 | JavaScript без типов, статусы и модели не защищены компилятором |
-| Data/API слой | 5/10 | Есть адаптер, но mock, seed и storage смешаны в одном файле |
-| Локализация | 4/10 | Большой словарь есть, но DOM-перевод хрупкий и не основан на ключах |
-| Тестируемость | 2/10 | Нет unit/integration/e2e-набора для критических сценариев |
-| Поддерживаемость | 4/10 | Изменения в одной части монолита легко затрагивают другие страницы |
+- React 19;
+- TypeScript;
+- Vite 6;
+- CSS без UI-фреймворка;
+- Vitest для unit-тестов;
+- Playwright для e2e-тестов;
+- History API для маршрутизации;
+- локальный EN/RU runtime для перевода интерфейса.
 
-### Основные проблемы
+### Требования
 
-1. `main.tsx` содержит layout, страницы, формы, графики и бизнес-логику.
-2. `styles.css` содержит стили всего приложения без feature-границ.
-3. Статусы представлены свободными строками (`Closed`, `Expired`, `Active`).
-4. Некоторые поля появляются динамически и не закреплены интерфейсами.
-5. Mock API смешан с seed-данными и localStorage.
-6. Навигация основана на отображаемых строках вместо стабильных route-id.
-7. Перевод DOM может затронуть динамические данные и усложняет тестирование.
-8. Нет единого слоя selectors/helpers для фильтрации и аналитики.
-9. Нет автоматических regression-тестов, защищающих текущий визуал и поведение.
+- Node.js 18+;
+- npm.
 
-## План улучшения без изменения визуала
-
-Правило рефакторинга: существующие CSS-классы, DOM-геометрия, тексты и пользовательские сценарии не меняются без отдельного дизайн-задания.
-
-- [x] Зафиксировать аудит и план в README.
-- [x] Добавить строгий TypeScript и общие типы домена.
-- [x] Перевести API/storage/seed на TypeScript.
-- [x] Перевести React entry point с JSX на TSX.
-- [x] Вынести базовые общие UI-компоненты.
-- [x] Вынести Header/Sidebar/layout.
-- [x] Разнести Candidates, Access, Analytics, Profile и Auth по feature-модулям.
-- [x] Разделить фильтрацию кандидатов и батчей на чистые selectors.
-- [x] Зафиксировать маршруты, статусы и доменные значения union-типами.
-- [x] Убрать DOM-i18n и MutationObserver в пользу типизированного React JSX-runtime.
-- [x] Вынести fonts/tokens/reset в отдельный CSS foundation-слой без изменения cascade.
-- [x] Добавить lazy loading страниц.
-- [x] Добавить unit-тесты моделей/selectors.
-- [x] Добавить Playwright e2e smoke-тесты входа, маршрутов, досье, языка и выхода.
-- [x] Подтвердить typecheck, unit-тесты и production-сборку.
-
-### Журнал выполнения
-
-| Этап | Статус | Проверка |
-|---|---|---|
-| Аудит и документация | Выполнено | Текущая архитектура и риски зафиксированы |
-| TypeScript foundation | Выполнено | Строгий `tsconfig`, `npm run typecheck` проходит |
-| Domain/API migration | Выполнено | Типизированы Candidate, Batch, Workspace, Filters, API и seed |
-| Component split | Выполнен базовый слой | Вынесены Icon, Modal, CustomSelect, DateRangePicker, DataDisplay, Header и Sidebar |
-| Feature split | Выполнено | Все страницы и формы вынесены из shell по feature-модулям |
-| Typed i18n | Выполнено | Перевод выполняется JSX-runtime во время React-рендера; DOM observer удалён |
-| Финальная верификация | Выполнено | `typecheck`, 4 unit-теста, 19 Playwright e2e и production build проходят |
-
-### Структура после текущего этапа
-
-```text
-src/
-├── components/
-│   ├── layout/
-│   │   ├── Header.tsx
-│   │   └── Sidebar.tsx
-│   └── ui/
-│       ├── CustomSelect.tsx
-│       ├── DataDisplay.tsx
-│       ├── DateRangePicker.tsx
-│       ├── Icon.tsx
-│       └── Modal.tsx
-├── features/
-│   ├── access/
-│   │   ├── DropForm.tsx
-│   │   └── selectors.ts
-│   └── candidates/
-│       ├── CandidateCard.tsx
-│       ├── CandidateForm.tsx
-│       ├── DossiersPage.tsx
-│       └── selectors.ts
-├── services/api.ts
-├── types/domain.ts
-├── i18n.ts
-├── main.tsx
-└── styles.css
-```
-
-`main.tsx` уменьшен с монолитного файла примерно 61 KB до компактного orchestration shell. Страницы собираются в отдельные lazy chunks; JSX-классы и общий CSS cascade сохранены.
-
-## Запуск
-
-Требования: Node.js 18+ и npm.
+### Запуск
 
 ```bash
 npm install
 npm run dev
 ```
 
-Vite запустит проект на `http://127.0.0.1:5173`.
+Проект запускается по адресу:
 
-Другие команды:
+```text
+http://127.0.0.1:5173
+```
+
+### Проверки
 
 ```bash
-npm run typecheck # строгая проверка TypeScript
-npm test          # unit-тесты selectors
-npm run test:e2e # Playwright smoke-тесты
-npm run build    # production-сборка в dist/
-npm run preview  # просмотр production-сборки
+npm run typecheck
+npm test
+npm run test:e2e
+npm run build
+npm run preview
 ```
 
-## Текущая структура
+---
 
-```text
-ceocom/
-├── index.html                 # HTML-точка входа Vite
-├── package.json               # зависимости и npm-команды
-├── package-lock.json
-└── src/
-    ├── main.tsx               # orchestration shell и состояние приложения
-    ├── styles.css             # все стили, адаптивность и состояния
-    ├── i18n.ts                # EN/RU-словарь и механизм локализации
-    ├── services/
-    │   └── api.ts             # типизированный mock API, seed и localStorage
-    └── assets/
-        └── fonts/
-            ├── Candal-Regular.ttf
-            ├── Candal-OFL.txt
-            └── trebuchet-ms-*.ttf
-```
+## Основные frontend-разделы
 
-Проект выглядит большим, но файлов мало, потому что UI пока собран монолитно. Основной объём находится в трёх файлах:
+### Candidate Dossiers
 
-- `main.tsx` — примерно 61 KB;
-- `styles.css` — примерно 62 KB;
-- `i18n.ts` — примерно 22 KB.
+Раздел управления кандидатами:
 
-Это допустимо для быстрого прототипа, но перед активной backend-разработкой код стоит декомпозировать.
+- просмотр списка;
+- поиск;
+- фильтрация;
+- сортировка;
+- grid/list отображение;
+- открытие полного досье;
+- создание кандидата;
+- изменение статуса;
+- назначение кода;
+- добавление, изменение и удаление заметок;
+- архивирование;
+- экспорт досье.
 
-## Что находится в `main.tsx`
+### Access Codes
 
-### Корневое приложение
+Раздел управления доступом:
 
-`App` управляет:
+- создание дропов;
+- создание батчей кодов;
+- single-use и multi-use режимы;
+- количество кодов;
+- срок действия;
+- просмотр батча;
+- закрытие и повторное открытие батча;
+- экспорт;
+- статистика issued/redeemed/remaining.
 
-- текущей страницей;
-- выбранным кандидатом;
-- состоянием sidebar;
-- фильтрами и поиском;
-- модальными окнами;
-- toast-уведомлениями;
-- frontend-сессией;
-- выбранным языком;
-- общей копией данных кандидатов и дропов.
+### Analytics
 
-Маршруты имеют стабильные URL (`/candidates`, `/access-codes`, `/analytics`, `/profile`, `/candidates/:id`) и синхронизированы с History API/back-forward.
+Раздел аналитики:
 
-### Общие компоненты
+- общая воронка;
+- количество заявок;
+- количество одобренных кандидатов;
+- количество созданных кодов;
+- количество активированных кодов;
+- conversion rate;
+- статистика по дропам;
+- график динамики;
+- фильтры по периоду.
 
-- `Icon` — набор SVG-иконок.
-- `Header` — верхняя навигация, язык, поиск, уведомления и профиль.
-- `Sidebar` — фильтры, поиск, сохранённый вид и сворачивание панели.
-- `CustomSelect` — кастомный dropdown.
-- `DateRangePicker` — выбор диапазона дат.
-- `FilterGroup` / `SelectSide` — элементы фильтров.
-- `MetricStrip` — ряд метрик.
-- `Modal` — базовая модалка.
-- `Info`, `Mini`, `Empty` — небольшие UI-компоненты.
+### Profile
 
-### Страницы
+Раздел профиля внутреннего пользователя:
 
-- `Dossiers` — список кандидатов, grid/list, сортировка и фильтры.
-- `Dossier` — полная карточка кандидата, статусы, код, заметки и timeline.
-- `Access` — дропы, батчи кодов, генерация, сортировка и activity.
-- `Analytics` — метрики, funnel, график и таблица эффективности.
-- `ProfilePage` — профиль, уведомления, безопасность и права.
-- `LoginPage` — frontend-MVP авторизации.
+- данные менеджера;
+- настройки;
+- безопасность;
+- права доступа;
+- уведомления;
+- выход из системы.
 
-### Формы
+---
 
-- `CandidateForm` — создание кандидата.
-- `DropForm` — создание нового дропа.
-
-## Данные и mock API
-
-Файл `src/services/api.ts` содержит:
-
-- `seedState` — демонстрационных кандидатов, дропы и activity;
-- `load()` — чтение состояния;
-- `save(state)` — сохранение состояния;
-- `search(query)` — локальный поиск;
-- `reset()` — сброс к seed-данным;
-- `export(state)` — формирование JSON-файла.
-
-Сейчас данные сохраняются в браузере под ключом:
-
-```text
-ceomentality:mvp:v1
-```
-
-Интерфейс `api` специально сделан как адаптер. При появлении backend его методы можно заменить на `fetch`/Axios, не переписывая экраны целиком.
-
-Пример будущей замены:
-
-```js
-load: () => fetch('/api/workspace').then(response => response.json())
-```
-
-## localStorage
-
-Приложение использует следующие ключи:
-
-| Ключ | Назначение |
-|---|---|
-| `ceomentality:mvp:v1` | кандидаты, дропы и activity |
-| `ceomentality:session` | frontend-сессия входа |
-| `ceomentality:language` | `en` или `ru` |
-| `ceomentality:sidebar` | состояние боковой панели |
-| `ceomentality:view` | сохранённые фильтры и поиск |
-| `ceomentality:profile` | настройки менеджера |
-
-Это не безопасное серверное хранилище. Пароли, роли и права нельзя оставлять в localStorage в production.
-
-## Авторизация
-
-Текущая авторизация является frontend-заглушкой:
-
-- проверяется заполненность email;
-- пароль должен содержать минимум четыре символа;
-- вход записывает локальную сессию;
-- Sign out удаляет локальную сессию.
-
-Backend должен заменить это на:
-
-- серверную проверку пользователя;
-- безопасную cookie-сессию или access/refresh tokens;
-- RBAC для Founder и Manager;
-- endpoint выхода и обновления сессии.
-
-## Локализация
-
-`src/i18n.ts` содержит:
-
-- EN → RU словарь;
-- обратный RU → EN словарь;
-- месяцы, даты, статусы и относительное время;
-- переводы динамических подписей;
-- список профессиональных терминов, которые не переводятся;
-- защиту названий компаний от частичной замены.
-
-Главные display-заголовки, `CEOMENTALITY` и `access system` всегда остаются английскими.
-
-Локализация применяется типизированным JSX-runtime во время React-рендера. Она не обходит DOM, не использует MutationObserver и не изменяет CSS-классы или SVG-пропсы. Брендовые заголовки остаются английскими.
-
-## Стили
-
-Все стили находятся в `src/styles.css`.
-
-Внутри файла расположены:
-
-- локальные `@font-face`;
-- дизайн-токены в `:root`;
-- layout header/sidebar/content;
-- страницы и компоненты;
-- dropdown/modal/toast;
-- графики и таблицы;
-- grid/list состояния;
-- адаптивные media queries.
-
-Основные шрифты:
-
-- Candal — крупные display-заголовки;
-- Trebuchet MS — интерфейс и основной текст.
-
-### Адаптивность
-
-Интерфейс проверяется на контрольных ширинах `360`, `390`, `430`, `768`, `1024`, `1366`, `1920` и `2560px`. Responsive-набор покрывает все основные страницы, login, модальные окна и календарь. Отдельный desktop-regression защищает исходную ширину sidebar, размер wordmark и трёхколоночную сетку кандидатов.
-
-- desktop-макет выше `1360px` сохраняет исходную композицию;
-- ноутбуки получают более компактные сетки без изменения функциональности;
-- планшеты используют двухрядный header и адаптированные панели;
-- телефоны получают одноколоночные карточки, вертикальные timeline и табличные данные в card-виде;
-- горизонтальное переполнение документа запрещено, локальная прокрутка остаётся только у содержательно широких контролов.
-
-## Что уже работает без backend
-
-- локальная авторизация и выход;
-- EN/RU интерфейс;
-- поиск и фильтры;
-- сохранённый вид;
-- grid/list кандидатов и батчей;
-- изменение статусов кандидатов;
-- генерация кодов;
-- добавление, редактирование и удаление заметок;
-- создание кандидатов и дропов;
-- экспорт workspace, кандидата и батча;
-- dropdown-меню действий;
-- календарь и диапазон дат;
-- базовая аналитика и переключение периода графика.
-
-## Что должен подключить backend
-
-1. Пользователи, роли и безопасная авторизация.
-2. Единая база кандидатов и участников.
-3. Заявки на покупку и вступление в клуб.
-4. История статусов и audit log.
-5. Дропы и уникальные/общие коды.
-6. Telegram-бот и уведомления.
-7. Реальное использование и погашение кодов.
-8. Серверная аналитика.
-9. Экспорт и фоновые задачи.
-
-## Рекомендуемая декомпозиция
-
-Перед следующим крупным этапом рекомендуется перейти к структуре:
+## Текущая архитектура
 
 ```text
 src/
 ├── app/
-│   ├── App.jsx
-│   └── routes.jsx
+│   ├── ErrorBoundary.tsx
+│   └── routes.ts
 ├── components/
-│   ├── ui/
 │   ├── layout/
-│   └── charts/
+│   │   ├── Header.tsx
+│   │   └── Sidebar.tsx
+│   └── ui/
 ├── features/
+│   ├── access/
+│   ├── analytics/
 │   ├── auth/
 │   ├── candidates/
-│   ├── drops/
-│   ├── analytics/
 │   └── profile/
-├── hooks/
+├── i18n-runtime/
 ├── services/
-├── i18n/
+│   └── api.ts
 ├── styles/
-└── assets/
+├── types/
+│   └── domain.ts
+├── main.tsx
+└── styles.css
 ```
 
-Разносить стоит постепенно, без изменения поведения:
+### Основные точки интеграции
 
-1. вынести UI-компоненты;
-2. вынести layout;
-3. вынести каждую страницу;
-4. разделить CSS по feature-файлам;
-5. подключить router;
-6. заменить mock API на backend-клиент;
-7. добавить unit/e2e тесты.
+```text
+src/services/api.ts
+```
 
-## Production-заметки
+Единый frontend-адаптер данных. Сейчас он работает через `localStorage`. При подключении backend его необходимо заменить на HTTP-запросы.
 
-- Не хранить токены и пароли в localStorage.
-- Не использовать клиентскую генерацию кодов как источник истины.
-- Проверять все права на сервере.
-- Добавить обработку loading/error/empty для API.
-- Добавить React Error Boundary.
-- Настроить ESLint, Prettier и тесты.
-- Перенести activity и аналитику на серверные данные.
-- Добавить `.env` для URL API и Telegram-интеграции.
+```text
+src/types/domain.ts
+```
+
+Содержит текущие TypeScript-модели, enum-подобные union-типы и контракты данных.
+
+```text
+src/main.tsx
+```
+
+Orchestration shell приложения:
+
+- загружает workspace;
+- хранит frontend-состояние;
+- вызывает API-адаптер;
+- обрабатывает создание и обновление сущностей;
+- переключает страницы;
+- управляет локальной сессией.
+
+---
+
+## Текущий поток данных
+
+При запуске frontend выполняет:
+
+```ts
+api.load()
+```
+
+После любого изменения общего состояния вызывается:
+
+```ts
+api.save(state)
+```
+
+Сейчас данные сохраняются в:
+
+```text
+localStorage: ceomentality:mvp:v1
+```
+
+Текущий контракт адаптера:
+
+```ts
+api.load()
+api.save(state)
+api.search(query)
+api.reset()
+api.export(state)
+```
+
+Backend можно подключать поэтапно.
+
+---
+
+# Backend-интеграция
+
+## Вариант 1: минимальная интеграция без переработки frontend
+
+Это самый быстрый способ подключить сервер к существующему интерфейсу.
+
+Backend реализует два основных endpoint:
+
+```http
+GET /api/workspace
+PUT /api/workspace
+```
+
+### GET `/api/workspace`
+
+Возвращает полный workspace:
+
+```json
+{
+  "candidates": [],
+  "drops": [],
+  "activity": []
+}
+```
+
+### PUT `/api/workspace`
+
+Принимает полный workspace:
+
+```json
+{
+  "candidates": [],
+  "drops": [],
+  "activity": []
+}
+```
+
+Возвращает сохранённую версию:
+
+```json
+{
+  "candidates": [],
+  "drops": [],
+  "activity": []
+}
+```
+
+Такой вариант совместим с текущим `main.tsx`, но при каждом изменении будет отправляться всё состояние целиком.
+
+Это допустимо для первого серверного MVP, но не рекомендуется как финальная production-архитектура.
+
+---
+
+## Пример минимального HTTP-адаптера
+
+Создать переменную окружения:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+Пример замены `src/services/api.ts`:
+
+```ts
+import type { WorkspaceState } from '../types/domain';
+
+const API_URL = import.meta.env.VITE_API_URL ?? '';
+
+async function request<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const response = await fetch(`${API_URL}${path}`, {
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+
+    throw new Error(
+      error?.message ?? `Request failed with status ${response.status}`,
+    );
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return response.json() as Promise<T>;
+}
+
+export const api = {
+  load: (): Promise<WorkspaceState> =>
+    request<WorkspaceState>('/api/workspace'),
+
+  save: (state: WorkspaceState): Promise<WorkspaceState> =>
+    request<WorkspaceState>('/api/workspace', {
+      method: 'PUT',
+      body: JSON.stringify(state),
+    }),
+
+  search: (query: string) =>
+    request<{
+      candidates: WorkspaceState['candidates'];
+      drops: WorkspaceState['drops'];
+    }>(`/api/search?q=${encodeURIComponent(query)}`),
+
+  reset: (): Promise<WorkspaceState> =>
+    request<WorkspaceState>('/api/workspace/reset', {
+      method: 'POST',
+    }),
+
+  export: (state: WorkspaceState) =>
+    new Blob([JSON.stringify(state, null, 2)], {
+      type: 'application/json',
+    }),
+};
+```
+
+---
+
+# Рекомендуемая production-архитектура API
+
+После первичного подключения желательно отказаться от сохранения всего `WorkspaceState` одним запросом и перейти к отдельным endpoint для каждой сущности.
+
+## Авторизация
+
+```http
+POST /api/auth/login
+GET  /api/auth/me
+POST /api/auth/refresh
+POST /api/auth/logout
+```
+
+### Login request
+
+```json
+{
+  "email": "manager@ceomentality.club",
+  "password": "password"
+}
+```
+
+### Login response
+
+```json
+{
+  "user": {
+    "id": "usr_123",
+    "name": "Club Manager",
+    "email": "manager@ceomentality.club",
+    "role": "manager"
+  }
+}
+```
+
+Предпочтительный вариант авторизации:
+
+- `HttpOnly`;
+- `Secure`;
+- `SameSite=Lax` или `SameSite=Strict`;
+- серверная cookie-сессия.
+
+Допустимый альтернативный вариант:
+
+- короткоживущий access token;
+- refresh token в `HttpOnly` cookie.
+
+Токены, пароли и реальные права доступа нельзя хранить в `localStorage`.
+
+---
+
+## Пользователи и роли
+
+```http
+GET   /api/users
+GET   /api/users/:id
+POST  /api/users
+PATCH /api/users/:id
+```
+
+Минимальные роли:
+
+```text
+founder
+manager
+viewer
+```
+
+Рекомендуемые права:
+
+| Действие | Founder | Manager | Viewer |
+|---|---:|---:|---:|
+| Просмотр кандидатов | Да | Да | Да |
+| Изменение кандидатов | Да | Да | Нет |
+| Создание кодов | Да | Да | Нет |
+| Управление пользователями | Да | Нет | Нет |
+| Просмотр аналитики | Да | Да | Да |
+| Экспорт данных | Да | Да | По настройке |
+
+Все права должны проверяться на сервере, независимо от состояния интерфейса.
+
+---
+
+## Кандидаты
+
+```http
+GET    /api/candidates
+GET    /api/candidates/:id
+POST   /api/candidates
+PATCH  /api/candidates/:id
+DELETE /api/candidates/:id
+```
+
+### Фильтрация
+
+Пример:
+
+```http
+GET /api/candidates?status=Approved&wave=Wave%2002&source=Partner&expertise=Investor&search=maria&page=1&limit=20
+```
+
+Рекомендуемый ответ со страницами:
+
+```json
+{
+  "items": [],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 0,
+    "pages": 0
+  }
+}
+```
+
+### Текущая совместимая модель кандидата
+
+```ts
+interface Candidate {
+  id: string;
+  name: string;
+  initials: string;
+  role: string;
+  company: string;
+  status: CandidateStatus;
+  wave: string;
+  code: string | null;
+  notes: string[];
+  summary: string;
+  expertise: string;
+  country: string;
+  telegram: string;
+  source: CandidateSource;
+  stage: CandidateStage;
+  appliedAt: string;
+}
+```
+
+### Допустимые статусы кандидата
+
+Backend должен возвращать значения в точном написании:
+
+```text
+Under review
+Approved
+Rejected
+Code assigned
+Code used
+Accepted
+Waitlisted
+Archived
+```
+
+### Этап заявки
+
+```text
+purchase
+club
+```
+
+### Источник кандидата
+
+```text
+Website
+Telegram bot
+Partner
+Referral
+Manual
+Import
+API
+```
+
+### Пример создания кандидата
+
+```http
+POST /api/candidates
+```
+
+```json
+{
+  "name": "Alexei Petrov",
+  "telegram": "@alexei",
+  "country": "Switzerland",
+  "role": "Founder / CEO",
+  "company": "Northtrail",
+  "expertise": "Founder / CEO",
+  "wave": "Wave 02",
+  "stage": "purchase",
+  "summary": "Serial founder with two exits.",
+  "source": "Website"
+}
+```
+
+### Пример обновления статуса
+
+```http
+PATCH /api/candidates/alexei-petrov
+```
+
+```json
+{
+  "status": "Approved"
+}
+```
+
+Архивирование желательно реализовать как изменение статуса:
+
+```json
+{
+  "status": "Archived"
+}
+```
+
+Физическое удаление записей использовать только при наличии отдельного подтверждённого сценария.
+
+---
+
+## Заметки кандидата
+
+Для production лучше вынести заметки из массива строк в отдельную таблицу.
+
+```http
+GET    /api/candidates/:candidateId/notes
+POST   /api/candidates/:candidateId/notes
+PATCH  /api/candidates/:candidateId/notes/:noteId
+DELETE /api/candidates/:candidateId/notes/:noteId
+```
+
+Рекомендуемая модель:
+
+```json
+{
+  "id": "note_123",
+  "candidateId": "alexei-petrov",
+  "author": {
+    "id": "usr_123",
+    "name": "Club Manager"
+  },
+  "text": "Strong product sense.",
+  "visibility": "private",
+  "createdAt": "2026-07-12T12:00:00.000Z",
+  "updatedAt": "2026-07-12T12:00:00.000Z"
+}
+```
+
+На первом этапе frontend ожидает:
+
+```ts
+notes: string[]
+```
+
+Поэтому есть два варианта:
+
+1. backend временно возвращает массив строк;
+2. frontend переводится на объектную модель заметок.
+
+Второй вариант предпочтительнее.
+
+---
+
+## Дропы и батчи кодов
+
+```http
+GET   /api/drops
+GET   /api/drops/:id
+POST  /api/drops
+PATCH /api/drops/:id
+```
+
+### Текущая совместимая модель
+
+```ts
+interface AccessBatch {
+  id: string;
+  name: string;
+  description: string;
+  issued: number;
+  redeemed: number;
+  status: DropStatus;
+  validity: string;
+  code: string;
+  codeType?: CodeType;
+  source?: CandidateSource;
+}
+```
+
+### Допустимые статусы дропа
+
+```text
+Draft
+Scheduled
+Active
+Paused
+Closed
+Expired
+Cancelled
+```
+
+### Типы кодов
+
+```text
+Single-use
+Multi-use
+```
+
+### Создание дропа
+
+```http
+POST /api/drops
+```
+
+```json
+{
+  "name": "Wave 05",
+  "description": "Private summer access",
+  "issued": 500,
+  "validity": "2026-07-15/2026-08-15",
+  "code": "CM-SUMMER-05"
+}
+```
+
+Для production даты желательно хранить раздельно:
+
+```json
+{
+  "validFrom": "2026-07-15T00:00:00.000Z",
+  "validUntil": "2026-08-15T23:59:59.000Z"
+}
+```
+
+Текущее строковое поле `validity` можно формировать на frontend.
+
+---
+
+## Генерация кодов
+
+Генерация кодов обязательно должна выполняться на сервере.
+
+```http
+POST /api/code-batches
+```
+
+```json
+{
+  "dropId": "wave-05",
+  "codeType": "Single-use",
+  "quantity": 500,
+  "validFrom": "2026-07-15T00:00:00.000Z",
+  "validUntil": "2026-08-15T23:59:59.000Z",
+  "prefix": "CM-W5"
+}
+```
+
+Пример ответа:
+
+```json
+{
+  "batch": {
+    "id": "batch_123",
+    "dropId": "wave-05",
+    "codeType": "Single-use",
+    "issued": 500,
+    "redeemed": 0,
+    "status": "Active"
+  }
+}
+```
+
+Необходимо обеспечить:
+
+- криптографически безопасную генерацию;
+- уникальный индекс в базе;
+- невозможность повторной активации single-use кода;
+- транзакционное погашение;
+- хранение даты создания;
+- хранение пользователя, создавшего батч;
+- audit log;
+- rate limiting;
+- защиту от перебора кодов.
+
+Клиентская генерация через `Math.random()` является только MVP-заглушкой и не должна использоваться как источник истины.
+
+---
+
+## Назначение кода кандидату
+
+```http
+POST /api/candidates/:candidateId/access-code
+```
+
+```json
+{
+  "batchId": "batch_123"
+}
+```
+
+Ответ:
+
+```json
+{
+  "id": "code_123",
+  "value": "CM-W5-A8K2-PQ91",
+  "candidateId": "alexei-petrov",
+  "status": "Active",
+  "validFrom": "2026-07-15T00:00:00.000Z",
+  "validUntil": "2026-08-15T23:59:59.000Z",
+  "redeemedAt": null
+}
+```
+
+---
+
+## Погашение кода
+
+```http
+POST /api/access-codes/redeem
+```
+
+```json
+{
+  "code": "CM-W5-A8K2-PQ91"
+}
+```
+
+Успешный ответ:
+
+```json
+{
+  "success": true,
+  "code": {
+    "status": "Redeemed",
+    "redeemedAt": "2026-07-20T14:30:00.000Z"
+  }
+}
+```
+
+Повторное использование single-use кода должно возвращать конфликт:
+
+```http
+409 Conflict
+```
+
+---
+
+## Activity и audit log
+
+```http
+GET /api/activity
+GET /api/candidates/:id/activity
+GET /api/drops/:id/activity
+```
+
+Рекомендуемая модель события:
+
+```json
+{
+  "id": "evt_123",
+  "type": "candidate.status_changed",
+  "entityType": "candidate",
+  "entityId": "alexei-petrov",
+  "actor": {
+    "id": "usr_123",
+    "name": "Club Manager"
+  },
+  "data": {
+    "previousStatus": "Under review",
+    "nextStatus": "Approved"
+  },
+  "createdAt": "2026-07-12T12:00:00.000Z"
+}
+```
+
+В audit log желательно фиксировать:
+
+- вход и выход;
+- создание кандидата;
+- изменение статуса;
+- редактирование профиля;
+- создание дропа;
+- генерацию кодов;
+- назначение кода;
+- погашение кода;
+- экспорт;
+- изменение ролей;
+- удаление или архивирование.
+
+Audit log не должен редактироваться обычным пользователем.
+
+---
+
+## Поиск
+
+```http
+GET /api/search?q=alexei
+```
+
+Пример ответа:
+
+```json
+{
+  "candidates": [],
+  "drops": [],
+  "codes": []
+}
+```
+
+Текущий API-адаптер уже содержит метод `search`, но интерфейс глобального поиска пока частично фильтрует локальный список. Для полноценного серверного поиска Header необходимо переключить на `api.search()`.
+
+---
+
+## Аналитика
+
+```http
+GET /api/analytics/summary
+GET /api/analytics/funnel
+GET /api/analytics/timeseries
+GET /api/analytics/drops
+```
+
+Пример:
+
+```http
+GET /api/analytics/timeseries?from=2026-07-01&to=2026-07-31&granularity=daily
+```
+
+Ответ:
+
+```json
+{
+  "items": [
+    {
+      "date": "2026-07-01",
+      "applications": 12,
+      "approved": 5,
+      "codesGenerated": 4,
+      "codesActivated": 3,
+      "conversionRate": 25
+    }
+  ]
+}
+```
+
+Сейчас часть аналитики рассчитывается frontend из массива кандидатов и дропов, а временные ряды и некоторые показатели являются демонстрационными данными.
+
+Backend должен стать единственным источником:
+
+- количества заявок;
+- количества одобрений;
+- количества созданных кодов;
+- количества активаций;
+- conversion rate;
+- данных по волнам;
+- динамики по времени;
+- сравнений периодов.
+
+---
+
+## Уведомления и Telegram
+
+Рекомендуемые endpoint:
+
+```http
+GET   /api/notifications
+PATCH /api/notifications/:id/read
+POST  /api/notifications/read-all
+POST  /api/candidates/:id/reminders
+```
+
+Для Telegram-интеграции backend должен:
+
+- принимать заявки от Telegram-бота;
+- сохранять Telegram ID отдельно от username;
+- отправлять уведомления;
+- отправлять коды;
+- фиксировать время отправки;
+- обрабатывать ошибки доставки;
+- предотвращать повторную отправку;
+- записывать события в activity log.
+
+Telegram bot token должен находиться только на backend в переменных окружения.
+
+---
+
+## Экспорт
+
+```http
+GET /api/exports/workspace
+GET /api/exports/candidates
+GET /api/exports/drops
+GET /api/exports/activity
+```
+
+Для небольших объёмов сервер может возвращать файл сразу.
+
+Для больших объёмов:
+
+```http
+POST /api/export-jobs
+GET  /api/export-jobs/:id
+```
+
+---
+
+# Формат ответов API
+
+## Успех
+
+```json
+{
+  "data": {}
+}
+```
+
+Для списков:
+
+```json
+{
+  "data": [],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "pages": 5
+  }
+}
+```
+
+## Ошибка
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Candidate status is invalid",
+    "fields": {
+      "status": "Unsupported value"
+    }
+  }
+}
+```
+
+Рекомендуемые HTTP-коды:
+
+| Код | Назначение |
+|---:|---|
+| 200 | Успешный запрос |
+| 201 | Сущность создана |
+| 204 | Успешный запрос без тела |
+| 400 | Некорректный запрос |
+| 401 | Пользователь не авторизован |
+| 403 | Недостаточно прав |
+| 404 | Сущность не найдена |
+| 409 | Конфликт или повторное использование кода |
+| 422 | Ошибка валидации |
+| 429 | Превышен rate limit |
+| 500 | Внутренняя ошибка сервера |
+
+---
+
+# Правила совместимости frontend и backend
+
+## Строковые значения
+
+До появления отдельного mapping-слоя backend должен возвращать статусы в точном написании, указанном в `src/types/domain.ts`.
+
+Например:
+
+```text
+Approved
+```
+
+а не:
+
+```text
+approved
+APPROVED
+Одобрена
+```
+
+Иначе текущие фильтры и отображение статусов могут перестать работать.
+
+## Даты
+
+Backend должен хранить и передавать даты в ISO 8601:
+
+```text
+2026-07-12T12:00:00.000Z
+```
+
+Форматирование выполняется frontend.
+
+## Идентификаторы
+
+ID должны быть стабильными и уникальными.
+
+Допустимые варианты:
+
+- UUID;
+- ULID;
+- серверный string ID.
+
+Frontend не должен генерировать production-ID через `Date.now()`.
+
+## Денормализация
+
+Первый backend-MVP может возвращать данные в форме текущего `WorkspaceState`.
+
+В production рекомендуется разделить:
+
+- candidates;
+- notes;
+- users;
+- drops;
+- batches;
+- access codes;
+- redemptions;
+- activity events.
+
+---
+
+# Что сейчас является frontend-заглушкой
+
+Следующие данные пока не являются серверными:
+
+- авторизация;
+- пользовательские роли;
+- часть профиля;
+- генерация кодов;
+- сохранение кандидатов;
+- сохранение дропов;
+- заметки;
+- история статусов;
+- activity;
+- уведомления;
+- временные ряды аналитики;
+- часть метрик досье;
+- fit score;
+- сведения о компании;
+- даты изменения;
+- информация о погашении кодов;
+- экспорт.
+
+При подключении backend эти места необходимо заменять постепенно, сохраняя текущую структуру компонентов и TypeScript-контракты.
+
+---
+
+# Рекомендуемый порядок подключения
+
+## Этап 1. Базовый сервер
+
+1. Поднять backend и базу данных.
+2. Настроить `.env`.
+3. Реализовать `GET /api/workspace`.
+4. Реализовать `PUT /api/workspace`.
+5. Заменить localStorage-адаптер.
+6. Добавить loading и error handling.
+7. Проверить существующие frontend-сценарии.
+
+## Этап 2. Авторизация
+
+1. Реализовать пользователей.
+2. Реализовать роли.
+3. Реализовать login/logout/me.
+4. Удалить frontend-сессию из localStorage.
+5. Добавить защиту endpoint.
+6. Добавить защиту frontend-маршрутов.
+
+## Этап 3. Нормальный CRUD
+
+1. Разделить workspace на сущности.
+2. Реализовать CRUD кандидатов.
+3. Реализовать заметки.
+4. Реализовать дропы.
+5. Реализовать батчи.
+6. Перевести `main.tsx` с полного `save(state)` на точечные mutation-запросы.
+
+## Этап 4. Коды
+
+1. Перенести генерацию кодов на сервер.
+2. Добавить уникальность.
+3. Добавить назначение кандидату.
+4. Добавить погашение.
+5. Добавить срок действия.
+6. Добавить rate limiting и audit log.
+
+## Этап 5. Аналитика и интеграции
+
+1. Подключить серверную аналитику.
+2. Подключить Telegram.
+3. Подключить уведомления.
+4. Подключить экспорт.
+5. Добавить фоновые задачи.
+6. Добавить мониторинг и логирование.
+
+---
+
+# Переменные окружения frontend
+
+Пример `.env.example`:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+Не добавлять реальные секреты в frontend `.env`.
+
+Все переменные Vite с префиксом `VITE_` доступны клиентскому JavaScript и не являются секретными.
+
+В frontend допустимо хранить:
+
+- публичный URL API;
+- название окружения;
+- публичные feature flags.
+
+В frontend запрещено хранить:
+
+- JWT secret;
+- database URL;
+- Telegram bot token;
+- private API keys;
+- пароли;
+- signing keys.
+
+---
+
+# CORS и cookies
+
+Для локальной разработки:
+
+```text
+Frontend: http://127.0.0.1:5173
+Backend:  http://localhost:8000
+```
+
+При cookie-авторизации backend должен разрешать credentials.
+
+Пример параметров CORS:
+
+```text
+Allowed origin: http://127.0.0.1:5173
+Allow credentials: true
+Allowed methods: GET, POST, PUT, PATCH, DELETE, OPTIONS
+Allowed headers: Content-Type, Authorization
+```
+
+Нельзя использовать одновременно:
+
+```text
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Credentials: true
+```
+
+---
+
+# Что проверить после подключения backend
+
+```bash
+npm run typecheck
+npm test
+npm run build
+npm run test:e2e
+```
+
+Обязательные ручные сценарии:
+
+1. Вход.
+2. Обновление страницы после входа.
+3. Выход.
+4. Получение списка кандидатов.
+5. Создание кандидата.
+6. Изменение статуса.
+7. Добавление заметки.
+8. Редактирование заметки.
+9. Удаление заметки.
+10. Создание дропа.
+11. Генерация батча.
+12. Закрытие батча.
+13. Назначение кода.
+14. Погашение кода.
+15. Поиск.
+16. Фильтры.
+17. Аналитика.
+18. Обработка 401, 403, 404, 409 и 500.
+19. Повторный запрос при сетевой ошибке.
+20. Работа на desktop, tablet и mobile.
+
+---
+
+# Клонирование проекта
+
+```bash
+git clone https://github.com/uglyfacegoat/CEOMENTALITY.git
+cd CEOMENTALITY
+npm install
+npm run dev
+```
+
+Для backend-разработчика рекомендуется создать отдельную ветку:
+
+```bash
+git switch -c backend/integration
+git push -u origin backend/integration
+```
