@@ -43,6 +43,9 @@ test('switches translated UI while keeping branded headings in English',async({p
  await authenticatedPage(page);
  await page.getByRole('button',{name:/switch interface language/i}).click();
  await expect(page.getByText('Фильтры',{exact:true})).toBeVisible();
+ await expect(page.locator('.filter-head span')).toHaveAttribute('data-russian-text','true');
+ await expect(page.locator('.filter-head span')).toHaveCSS('font-family',/Onest/);
+ await expect(page.locator('.brand')).not.toHaveAttribute('data-russian-text');
  await expect(page.locator('.main-nav button').nth(1)).not.toHaveText('Access Codes');
  await expect(page.getByRole('heading',{name:'candidate dossiers'})).toBeVisible();
  await expect(page.evaluate(()=>document.documentElement.lang)).resolves.toBe('ru');
@@ -53,6 +56,7 @@ test('desktop header toggle collapses and restores the sidebar',async({page})=>{
  const toggle=page.getByRole('button',{name:/hide filters/i});
  await toggle.click();
  await expect(page.locator('.sidebar')).toHaveCSS('width','0px');
+ await page.locator('.sidebar-reveal-zone').hover();
  await page.getByRole('button',{name:/show filters/i}).click();
  await expect(page.locator('.sidebar')).toHaveCSS('width','260px');
 });

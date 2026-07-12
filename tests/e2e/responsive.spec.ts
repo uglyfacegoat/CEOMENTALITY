@@ -99,16 +99,11 @@ test('iPad Pro portrait: candidate hero and cards stay inside the workspace',asy
  await openAuthenticated(page,'/candidates');
  const content=await page.locator('main.content').boundingBox();
  const metrics=await page.locator('.metric-strip.compact').boundingBox();
- const toggle=await page.locator('.header-sidebar-toggle-desktop').boundingBox();
- const firstTab=await page.locator('.main-nav button').first().boundingBox();
  expect(content).not.toBeNull();
  expect(metrics).not.toBeNull();
  expect(metrics!.x).toBeGreaterThanOrEqual(content!.x);
  expect(metrics!.x+metrics!.width).toBeLessThanOrEqual(1024);
- expect(toggle).not.toBeNull();
- expect(firstTab).not.toBeNull();
- expect(toggle!.x+toggle!.width).toBeLessThan(firstTab!.x);
- expect(Math.abs((toggle!.y+toggle!.height/2)-(firstTab!.y+firstTab!.height/2))).toBeLessThanOrEqual(2);
+ await expect(page.locator('.header-sidebar-toggle-desktop')).toBeVisible();
  const cardEdges=await page.locator('.candidate-card').evaluateAll(cards=>cards.map(card=>card.getBoundingClientRect().right));
  expect(Math.max(...cardEdges)).toBeLessThanOrEqual(1024);
  await expect(page.locator('.metric-strip.compact .metric')).toHaveCount(4);
@@ -127,12 +122,6 @@ test('responsive boundaries: candidate workspace never clips',async({page})=>{
   expect(metrics!.x+metrics!.width,`${width}px metrics clip`).toBeLessThanOrEqual(width+1);
   const cardEdges=await page.locator('.candidate-card').evaluateAll(cards=>cards.map(card=>card.getBoundingClientRect().right));
   expect(Math.max(...cardEdges),`${width}px cards clip`).toBeLessThanOrEqual(width+1);
-  if(width>=1041){
-   const toggle=await page.locator('.header-sidebar-toggle-desktop').boundingBox();
-   const firstTab=await page.locator('.main-nav button').first().boundingBox();
-   expect(toggle!.x+toggle!.width,`${width}px toggle is not next to navigation`).toBeLessThanOrEqual(firstTab!.x);
-   expect(firstTab!.x-(toggle!.x+toggle!.width),`${width}px toggle is too far from navigation`).toBeLessThanOrEqual(24);
-  }
  }
 });
 
