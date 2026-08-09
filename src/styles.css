@@ -1032,7 +1032,7 @@ label, .mini-grid label, .notes label, .metric-mini label, .validity label {
 .funnel-values p { display: flex; justify-content: space-between; gap: 10px; }
 .funnel-values strong { font-size: 20px; font-weight: 650; }
 .funnel-values span { font-size: 12px; color: #3f568d; }
-.funnel { position: relative; height: 176px; }
+.funnel { position: relative; min-width: 0; height: 176px; overflow: hidden; }
 .funnel div { position: absolute; left: 50%; transform: translateX(-50%); height: 44px; }
 .funnel div:nth-child(1) { top: 0; width: min(300px,100%); clip-path: polygon(0 0,100% 0,90% 100%,10% 100%); background: #00145c; }
 .funnel div:nth-child(2) { top: 44px; width: min(240px,80%); clip-path: polygon(0 0,100% 0,87.5% 100%,12.5% 100%); background: #0056ff; }

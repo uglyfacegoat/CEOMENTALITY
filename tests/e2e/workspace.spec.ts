@@ -51,6 +51,21 @@ test('switches translated UI while keeping branded headings in English',async({p
  await expect(page.evaluate(()=>document.documentElement.lang)).resolves.toBe('ru');
 });
 
+test('keeps the profile language selector synchronized with the interface',async({page})=>{
+ await authenticatedPage(page,'/profile');
+ const languageSelect=page.locator('.profile-fields select');
+ await languageSelect.selectOption('ru');
+ await expect(languageSelect).toHaveValue('ru');
+ await expect(page.evaluate(()=>document.documentElement.lang)).resolves.toBe('ru');
+ await expect(page.evaluate(()=>localStorage.getItem('ceomentality:language'))).resolves.toBe('ru');
+ await page.reload();
+ await expect(page.locator('.profile-fields select')).toHaveValue('ru');
+ await expect(page.evaluate(()=>document.documentElement.lang)).resolves.toBe('ru');
+ await page.locator('.profile-fields select').selectOption('en');
+ await expect(page.locator('.profile-fields select')).toHaveValue('en');
+ await expect(page.evaluate(()=>document.documentElement.lang)).resolves.toBe('en');
+});
+
 test('desktop header toggle collapses and restores the sidebar',async({page})=>{
  await authenticatedPage(page,'/candidates/alexei-petrov');
  const toggle=page.getByRole('button',{name:/hide filters/i});

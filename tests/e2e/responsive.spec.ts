@@ -60,6 +60,27 @@ test('phone: analytics labels and chart scale remain aligned',async({page})=>{
  expect(Math.abs(svg!.height-axis!.height)).toBeLessThanOrEqual(1);
 });
 
+test('analytics funnel stays inside its column at responsive boundaries',async({page})=>{
+ await openAuthenticated(page,'/analytics');
+ for(const width of [320,360,390,430,640,768,900,901,1024,1180,1360,1361,1440,1920,2560,3840]){
+  await page.setViewportSize({width,height:900});
+  const geometry=await page.locator('.funnel-wrap').evaluate(element=>{
+   const funnel=element.querySelector('.funnel')!;
+   const funnelRect=funnel.getBoundingClientRect();
+   const stageRects=Array.from(funnel.children).map(stage=>stage.getBoundingClientRect());
+   const valueRects=Array.from(element.querySelectorAll('.funnel-values strong,.funnel-values span')).map(value=>value.getBoundingClientRect());
+   return {
+    overflow:getComputedStyle(funnel).overflow,
+    stagesInside:stageRects.every(stage=>stage.left>=funnelRect.left-.5&&stage.right<=funnelRect.right+.5),
+    overlapsValues:stageRects.some(stage=>valueRects.some(value=>stage.left<value.right&&stage.right>value.left&&stage.top<value.bottom&&stage.bottom>value.top))
+   };
+  });
+  expect(geometry.overflow,`${width}px funnel must clip to its column`).toBe('hidden');
+  expect(geometry.stagesInside,`${width}px funnel stage escapes its column`).toBe(true);
+  expect(geometry.overlapsValues,`${width}px funnel overlaps numeric values`).toBe(false);
+ }
+});
+
 test('phone: filters open as a dismissible drawer',async({page})=>{
  await page.setViewportSize({width:390,height:844});
  await openAuthenticated(page,'/candidates');
