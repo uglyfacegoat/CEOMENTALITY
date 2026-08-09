@@ -9,7 +9,21 @@ export function setRuntimeLanguage(next:Language):void { language=next }
 
 function translateValue(value:unknown):unknown {
  if(typeof value==='string')return language==='ru'&&!alwaysEnglish.has(value.trim())?translateText(value,'ru'):value;
- if(Array.isArray(value)){const translated=value.map(translateValue);return translated.some((item,index)=>item!==value[index])?translated:value}
+ if(Array.isArray(value)){
+  const translated:unknown[]=[];
+  let primitiveRun:Array<string|number>=[];
+  const flushPrimitiveRun=()=>{
+   if(!primitiveRun.length)return;
+   translated.push(primitiveRun.length===1&&typeof primitiveRun[0]==='number'?primitiveRun[0]:translateValue(primitiveRun.join('')));
+   primitiveRun=[];
+  };
+  for(const item of value){
+   if(typeof item==='string'||typeof item==='number')primitiveRun.push(item);
+   else{flushPrimitiveRun();translated.push(translateValue(item))}
+  }
+  flushPrimitiveRun();
+  return translated;
+ }
  return value;
 }
 

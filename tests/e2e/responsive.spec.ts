@@ -154,3 +154,54 @@ test('desktop: reference layout dimensions stay unchanged',async({page})=>{
  await expect(page.locator('.cards-grid')).toHaveCSS('grid-template-columns',/^(?:\d+(?:\.\d+)?px\s+){2}\d+(?:\.\d+)?px$/);
  await expect(page.locator('.candidate-card')).toHaveCount(9);
 });
+
+test('access code tabs and rows stay aligned across desktop widths',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('ceomentality:language','ru'));
+ for(const width of [1280,1366,1440,1600,1920,2560]){
+  await page.setViewportSize({width,height:900});
+  await openAuthenticated(page,'/access-codes');
+  const tabGeometry=await page.locator('.batch-tabs button').evaluateAll(buttons=>buttons.map(button=>({
+   whiteSpace:getComputedStyle(button).whiteSpace,
+   verticalOverflow:button.scrollHeight-button.clientHeight
+  })));
+  expect(tabGeometry.every(tab=>tab.whiteSpace==='nowrap'),`${width}px allows a batch tab to wrap`).toBe(true);
+  expect(Math.max(...tabGeometry.map(tab=>tab.verticalOverflow)),`${width}px clips a batch tab`).toBeLessThanOrEqual(1);
+  const rowOverflow=await page.locator('.batch-row').evaluateAll(rows=>rows.map(row=>row.scrollWidth-row.clientWidth));
+  expect(Math.max(...rowOverflow),`${width}px overflows a batch row`).toBeLessThanOrEqual(1);
+  const separators=await page.locator('.batch-row > div:nth-child(2)').evaluateAll(nodes=>nodes.map(node=>node.getBoundingClientRect().right));
+  expect(Math.max(...separators)-Math.min(...separators),`${width}px misaligns row separators`).toBeLessThanOrEqual(1);
+ }
+});
+
+test('recent code activity uses a complete bordered grid',async({page})=>{
+ await page.setViewportSize({width:1366,height:900});
+ await openAuthenticated(page,'/access-codes');
+ const list=page.locator('.activity-list');
+ const geometry=await list.evaluate(element=>({clientHeight:element.clientHeight,scrollHeight:element.scrollHeight}));
+ expect(geometry.scrollHeight).toBeLessThanOrEqual(geometry.clientHeight);
+ await expect(list).toHaveCSS('border-top-style','solid');
+ await expect(page.locator('.activity-row').first()).toHaveCSS('border-bottom-style','solid');
+ await expect(page.locator('.activity-row')).toHaveCount(5);
+});
+
+test('every conversion chart tooltip stays readable, bounded and above the points',async({page})=>{
+ await page.setViewportSize({width:1920,height:1080});
+ await openAuthenticated(page,'/analytics');
+ const panel=await page.locator('.line-panel').boundingBox();
+ expect(panel).not.toBeNull();
+ const points=page.locator('.point-hit');
+ for(let index=0;index<await points.count();index++){
+  const hitBox=await points.nth(index).boundingBox();
+  expect(hitBox).not.toBeNull();
+  await page.mouse.move(hitBox!.x+hitBox!.width/2,hitBox!.y+hitBox!.height/2);
+  const tooltip=page.locator('.chart-tooltip');
+  await expect(tooltip).toHaveCSS('opacity','1');
+  const box=await tooltip.boundingBox();
+  expect(box,`tooltip ${index+1} is missing`).not.toBeNull();
+  expect(box!.width).toBeGreaterThanOrEqual(135);
+  expect(box!.height).toBeGreaterThanOrEqual(56);
+  expect(box!.x,`tooltip ${index+1} escapes left`).toBeGreaterThanOrEqual(panel!.x);
+  expect(box!.x+box!.width,`tooltip ${index+1} escapes right`).toBeLessThanOrEqual(panel!.x+panel!.width);
+  expect(await page.locator('.chart svg').evaluate(svg=>svg.lastElementChild?.classList.contains('chart-tooltip'))).toBe(true);
+ }
+});

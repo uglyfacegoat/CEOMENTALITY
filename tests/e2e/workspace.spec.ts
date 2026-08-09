@@ -51,6 +51,16 @@ test('switches translated UI while keeping branded headings in English',async({p
  await expect(page.evaluate(()=>document.documentElement.lang)).resolves.toBe('ru');
 });
 
+test('keeps Russian notifications coherent and formats their timestamps',async({page})=>{
+ await authenticatedPage(page);
+ await page.getByRole('button',{name:/switch interface language/i}).click();
+ await page.getByRole('button',{name:'Notifications'}).click();
+ await expect(page.getByText('Alexei Petrov подал заявку на доступ к Product.',{exact:true})).toBeVisible();
+ await expect(page.getByText('Код доступа для Wave 01 успешно активирован.',{exact:true})).toBeVisible();
+ await expect(page.getByText('Срок действия «Весеннего дропа» истечёт через 3 дня.',{exact:true})).toBeVisible();
+ await expect(page.getByText('2 минуты назад',{exact:true})).toBeVisible();
+});
+
 test('keeps the profile language selector synchronized with the interface',async({page})=>{
  await authenticatedPage(page,'/profile');
  const languageSelect=page.locator('.profile-fields select');

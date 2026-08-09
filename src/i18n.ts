@@ -66,6 +66,8 @@ const enToRu:Record<string,string> = {
   "Code type": "Тип кода",
   "Assigned": "Назначен",
   "Validity": "Срок действия",
+  "Expiry": "Срок действия",
+  "Expires in 7 days": "Истекает в течение 7 дней",
   "Redeemed": "Использован",
   "Redeemed on": "Дата использования",
   "Last reminder sent": "Последнее напоминание",
@@ -204,6 +206,7 @@ const enToRu:Record<string,string> = {
   "Seed + Series A": "Seed + Series A",
   "Club membership": "Членство в клубе",
   "Product purchase": "Покупка Product",
+  "Product access": "Доступ к Product",
   "No": "Нет",
   "Yes": "Да",
   "Pending": "Ожидает",
@@ -229,6 +232,9 @@ const enToRu:Record<string,string> = {
   "English": "Английский",
   "Russian": "Русский",
   "New candidate application": "Новая заявка кандидата",
+  "Alexei Petrov submitted a product access application.": "Alexei Petrov подал заявку на доступ к Product.",
+  "Wave 01 access code was successfully activated.": "Код доступа для Wave 01 успешно активирован.",
+  "Spring Collection Drop closes in 3 days.": "Срок действия «Весеннего дропа» истечёт через 3 дня.",
   "Drop expires soon": "Срок дропа скоро истечёт",
   "ago": "назад",
   "No notes yet": "Заметок пока нет",
@@ -313,9 +319,9 @@ const enToRu:Record<string,string> = {
   "Manual": "Вручную",
   "Import": "Импорт",
   "API": "API",
-  "Serial founder with two exits. Building in AI + supply chain with global ambitions.": "Серийный founder с двумя exit. Развивает AI + supply chain с глобальными амбициями.",
+  "Serial founder with two exits. Building in AI + supply chain with global ambitions.": "Founder двух компаний с успешным exit. Сейчас развивает AI-продукт для автоматизации supply chain.",
   "Deep operator with a track record of scaling global teams and raising capital.": "Сильный operator с опытом масштабирования международных команд и привлечения капитала.",
-  "Early-stage investor focused on deep tech and infrastructure.": "Early-stage investor, сфокусированный на deep tech и инфраструктуре.",
+  "Early-stage investor focused on deep tech and infrastructure.": "Early-stage Investor с фокусом на deep tech и инфраструктуре.",
   "Scaled finance ops across multiple high-growth companies.": "Масштабировал finance ops в нескольких быстрорастущих компаниях.",
   "Product leader with experience in marketplace and SaaS.": "Product leader с опытом в marketplace и SaaS.",
   "Consumer brand builder with international background.": "Создатель consumer-брендов с международным опытом.",
@@ -324,7 +330,7 @@ const enToRu:Record<string,string> = {
   "Active angel investing in B2B SaaS.": "Активно инвестирует как angel investor в B2B SaaS.",
   "Strong operator, not a fit for this wave.": "Сильный operator, но не соответствует текущей волне.",
   "AI infrastructure for logistics.": "AI-инфраструктура для логистики.",
-  "Strong investor network in EU.": "Сильная сеть investor-контактов в ЕС.",
+  "Strong investor network in EU.": "Сильная сеть контактов среди инвесторов в ЕС.",
   "Referred by Anastasia Belova.": "Приглашён по рекомендации Anastasia Belova.",
   "Strong product sense.": "Сильный product sense.",
   "Invited via partner network.": "Приглашена через партнёрскую сеть.",
@@ -365,32 +371,114 @@ const enToRu:Record<string,string> = {
   "Collapse activity": "Свернуть активность",
   "Candidate data copied": "Данные кандидата скопированы",
   "Note copied": "Заметка скопирована",
-  "Timeline copied": "История скопирована"
+  "Timeline copied": "История скопирована",
+  "Fit score": "Оценка соответствия",
+  "Location": "Местоположение",
+  "Applied": "Дата заявки",
+  "Last updated": "Обновлено",
+  "Code": "Код",
+  "Wave / Drop": "Волна / дроп",
+  "You": "Вы",
+  "Moved to review": "Передано на рассмотрение",
+  "Profile updated": "Профиль обновлён",
+  "Type": "Тип",
+  "Candidate": "Кандидат",
+  "No code assigned": "Код не назначен",
+  "Send reminder": "Отправить напоминание",
+  "Reminder queued": "Напоминание запланировано",
+  "Regenerate code": "Создать код заново",
+  "Approval timeline": "История одобрения",
+  "Waiting for code": "Ожидает код",
+  "Close": "Закрыть",
+  "Copy timeline": "Скопировать историю"
 };
 
 const protectedTerms=['Founder / CEO','Founder','founder','CEO','CFO','SaaS','Enterprise','B2B','B2C','AI','Product','product','Investor','investor','Angel Investor','Startup','Fintech','EdTech','VC','C-level','marketplace','deep tech','supply chain','operator','finance ops','creative director','Creative Director','Media','media','content strategy','Product Lead','Leadership','Scaling teams'];
 for (const term of protectedTerms) delete enToRu[term];
-const ruToEn = Object.fromEntries(Object.entries(enToRu).map(([en,ru])=>[ru,en]));
-const ordered = (dict:Record<string,string>) => Object.entries(dict).sort((a,b)=>b[0].length-a[0].length);
-const escapeRegExp = (value:string) => value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-const replacePhrase = (text:string,source:string,target:string) => {
-  const escaped=escapeRegExp(source);
-  const startsWord=/^[\p{L}\p{N}_]/u.test(source),endsWord=/[\p{L}\p{N}_]$/u.test(source);
-  const pattern=`${startsWord?'(?<![\\p{L}\\p{N}_])':''}${escaped}${endsWord?'(?![\\p{L}\\p{N}_])':''}`;
-  return text.replace(new RegExp(pattern,'gu'),()=>target);
-};
+
+const monthIndex:Record<string,number>={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+const russianMonths=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+const russianShortMonths=['янв.','февр.','мар.','апр.','мая','июн.','июл.','авг.','сент.','окт.','нояб.','дек.'];
+
+function formatDateText(value:string):string|null {
+  const isoDate=value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(isoDate){
+    const [,year,month,day]=isoDate;
+    const index=Number(month)-1;
+    return index<0||index>11?null:`${Number(day)} ${russianMonths[index]} ${year}`;
+  }
+  const range=value.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2}) - (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2}), (\d{4})$/);
+  if(range){
+    const [,startMonth,startDay,endMonth,endDay,year]=range;
+    const startIndex=monthIndex[startMonth!],endIndex=monthIndex[endMonth!];
+    if(startIndex==null||endIndex==null)return null;
+    return startIndex===endIndex?`${startDay}–${endDay} ${russianMonths[endIndex]} ${year}`:`${startDay} ${russianMonths[startIndex]} – ${endDay} ${russianMonths[endIndex]} ${year}`;
+  }
+  const splitMonthRange=value.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2})–(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2})$/);
+  if(splitMonthRange){
+    const [,startMonth,startDay,endMonth,endDay]=splitMonthRange;
+    const startIndex=monthIndex[startMonth!],endIndex=monthIndex[endMonth!];
+    if(startIndex==null||endIndex==null)return null;
+    return `${startDay} ${russianShortMonths[startIndex]} – ${endDay} ${russianShortMonths[endIndex]}`;
+  }
+  const sameMonthRange=value.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2})–(\d{1,2})$/);
+  if(sameMonthRange){
+    const [,month,startDay,endDay]=sameMonthRange;
+    const index=monthIndex[month!];
+    return index==null?null:`${startDay}–${endDay} ${russianShortMonths[index]}`;
+  }
+  const day=value.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2})$/);
+  if(day){
+    const [,month,dayNumber]=day;
+    const index=monthIndex[month!];
+    return index==null?null:`${dayNumber} ${russianShortMonths[index]}`;
+  }
+  const fullDate=value.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2}), (\d{4})$/);
+  if(fullDate){
+    const [,month,dayNumber,year]=fullDate;
+    const index=monthIndex[month!];
+    return index==null?null:`${dayNumber} ${russianMonths[index]} ${year}`;
+  }
+  return null;
+}
+
+function formatRelativeTime(value:string):string|null {
+  const match=value.match(/^(\d+)\s*(m|min|minutes?|h|hours?|d|days?) ago$/);
+  if(!match)return null;
+  const amount=Number(match[1]),rawUnit=match[2]!;
+  const unit=rawUnit.startsWith('m')?'minute':rawUnit.startsWith('h')?'hour':'day';
+  return new Intl.RelativeTimeFormat('ru',{numeric:'always'}).format(-amount,unit);
+}
+
+function formatMetricDelta(value:string):string|null {
+  const match=value.match(/^([+-]\d+(?:\.\d+)?)(pp|%) vs last (month|30 days)$/);
+  if(!match)return null;
+  const number=match[1]!.replace('.',','),unit=match[2]==='pp'?' п.п.':'%',period=match[3]==='month'?'за прошлый месяц':'за последние 30 дней';
+  return `${number}${unit} ${period}`;
+}
+
+function formatDynamicText(value:string):string|null {
+  const count=value.match(/^(Notes|Activity) \((\d+)\)$/);
+  if(count)return `${enToRu[count[1]!]??count[1]} (${count[2]})`;
+  const codes=value.match(/^(\d+) codes?$/);
+  if(codes)return `${codes[1]} кодов`;
+  const performance=value.match(/^Performance context \((Wave \d+)\)$/);
+  if(performance)return `Контекст эффективности (${performance[1]})`;
+  const status=value.match(/^Status: (.+)$/);
+  if(status)return `Статус: ${enToRu[status[1]!]??status[1]}`;
+  const weekly=value.match(/^([+-]\d+) this week$/);
+  if(weekly)return `${weekly[1]} за неделю`;
+  const points=value.match(/^([+-]\d+(?:\.\d+)?)pp$/);
+  if(points)return `${points[1]!.replace('.',',')} п.п.`;
+  if(/^\d{1,3}(,\d{3})+$/.test(value))return value.replaceAll(',',String.fromCharCode(160));
+  if(/^[+-]?\d+\.\d+%$/.test(value))return value.replace('.',',');
+  if(/^\d+(?:\.\d+)? \(\d+\.\d+%\)$/.test(value))return value.replaceAll('.',',');
+  return null;
+}
 
 export function translateText(value:string, language:Language):string {
-  if (!value || !value.trim()) return value;
-  const dictionary = language === 'ru' ? enToRu : ruToEn;
-  let result = value;
-  for (const [source,target] of ordered(dictionary)) result = replacePhrase(result,source,target);
-  if (language === 'ru') result = result
-    .replace(/\b(\d+)m ago\b/g,'$1 мин назад').replace(/\b(\d+)h ago\b/g,'$1 ч назад').replace(/\b(\d+)d ago\b/g,'$1 дн назад')
-    .replace(/\b(\d+) minutes? ago\b/g,'$1 мин назад').replace(/\b(\d+) hours? ago\b/g,'$1 ч назад').replace(/\b(\d+) days? ago\b/g,'$1 дн назад')
-    .replace(/\b(\d+) days?\b/g,'$1 дн').replace(/\b(\d+) codes?\b/g,'$1 кодов').replace(/\b(\d+) participants?\b/g,'$1 участников');
-  else result = result
-    .replace(/\b(\d+) мин назад\b/g,'$1m ago').replace(/\b(\d+) ч назад\b/g,'$1h ago').replace(/\b(\d+) дн назад\b/g,'$1d ago')
-    .replace(/\b(\d+) дн\b/g,'$1 days').replace(/\b(\d+) кодов\b/g,'$1 codes').replace(/\b(\d+) участников\b/g,'$1 participants');
-  return result;
+  if(language==='en'||!value.trim())return value;
+  const text=value.trim();
+  const translated=enToRu[text]??formatDateText(text)??formatRelativeTime(text)??formatMetricDelta(text)??formatDynamicText(text);
+  return translated?value.replace(text,translated):value;
 }
